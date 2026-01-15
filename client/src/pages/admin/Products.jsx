@@ -3,9 +3,11 @@ import { toast } from 'react-hot-toast'
 import { adminAPI, productsAPI } from '../../services/api'
 import axios from 'axios'
 import Loading from '../../components/Loading'
+import { useLanguage } from '../../context/LanguageContext'
 import { PencilIcon, TrashIcon, PlusIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export default function AdminProducts() {
+  const { t } = useLanguage()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -45,7 +47,7 @@ export default function AdminProducts() {
         setTotalPages(response.data.pagination.pages)
       }
     } catch (error) {
-      toast.error('Failed to load products')
+      toast.error(t({ en: 'Failed to load products', vi: 'Không thể tải sản phẩm' }))
     } finally {
       setLoading(false)
     }
@@ -80,7 +82,7 @@ export default function AdminProducts() {
       resetForm()
       loadProducts()
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save product')
+      toast.error(error.response?.data?.message || t({ en: 'Failed to save product', vi: 'Không thể lưu sản phẩm' }))
     }
   }
 
@@ -117,10 +119,10 @@ export default function AdminProducts() {
         images: [...prev.images, ...uploadedUrls]
       }))
 
-      toast.success(`${uploadedUrls.length} image(s) uploaded successfully`)
+      toast.success(`${uploadedUrls.length} ${t({ en: 'image(s) uploaded successfully', vi: 'ảnh đã được tải lên thành công' })}`)
     } catch (error) {
       console.error('Upload error:', error)
-      toast.error('Failed to upload image')
+      toast.error(t({ en: 'Failed to upload image', vi: 'Không thể tải lên ảnh' }))
     } finally {
       setUploading(false)
     }
@@ -144,15 +146,15 @@ export default function AdminProducts() {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this product?')) return
+    if (!confirm(t({ en: 'Are you sure you want to delete this product?', vi: 'Bạn có chắc chắn muốn xóa sản phẩm này?' }))) return
 
     try {
       await adminAPI.deleteProduct(id)
-      toast.success('Product deleted successfully')
+      toast.success(t({ en: 'Product deleted successfully', vi: 'Xóa sản phẩm thành công' }))
       loadProducts()
     } catch (error) {
       console.error('Delete product error:', error)
-      toast.error(error.response?.data?.message || 'Failed to delete product')
+      toast.error(error.response?.data?.message || t({ en: 'Failed to delete product', vi: 'Không thể xóa sản phẩm' }))
     }
   }
 
@@ -193,8 +195,8 @@ export default function AdminProducts() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Products</h1>
-          <p className="text-gray-600 mt-1">Total: {totalProducts} products</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Manage Products', vi: 'Quản Lý Sản Phẩm' })}</h1>
+          <p className="text-gray-600 mt-1">{t({ en: 'Total:', vi: 'Tổng cộng:' })} {totalProducts} {t({ en: 'products', vi: 'sản phẩm' })}</p>
         </div>
         <button
           onClick={() => {
@@ -204,7 +206,7 @@ export default function AdminProducts() {
           className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition"
         >
           <PlusIcon className="h-5 w-5" />
-          Add Product
+          {t({ en: 'Add Product', vi: 'Thêm Sản Phẩm' })}
         </button>
       </div>
 
@@ -212,7 +214,7 @@ export default function AdminProducts() {
       <div className="mb-6">
         <input
           type="text"
-          placeholder="Search products..."
+          placeholder={t({ en: 'Search products...', vi: 'Tìm kiếm sản phẩm...' })}
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value)
@@ -301,7 +303,7 @@ export default function AdminProducts() {
             disabled={currentPage === 1}
             className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
+            {t({ en: 'Previous', vi: 'Trước' })}
           </button>
           
           {[...Array(totalPages)].map((_, index) => {
@@ -336,7 +338,7 @@ export default function AdminProducts() {
             disabled={currentPage === totalPages}
             className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Next
+            {t({ en: 'Next', vi: 'Tiếp' })}
           </button>
         </div>
       )}
@@ -346,13 +348,13 @@ export default function AdminProducts() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {editingProduct ? 'Edit Product' : 'Add New Product'}
+              {editingProduct ? t({ en: 'Edit Product', vi: 'Chỉnh Sửa Sản Phẩm' }) : t({ en: 'Add New Product', vi: 'Thêm Sản Phẩm Mới' })}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Name *', vi: 'Tên *' })}</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -363,7 +365,7 @@ export default function AdminProducts() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Brand *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Brand *', vi: 'Thương Hiệu *' })}</label>
                   <input
                     type="text"
                     value={formData.brand}
@@ -374,7 +376,7 @@ export default function AdminProducts() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Category *', vi: 'Danh Mục *' })}</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
@@ -382,12 +384,12 @@ export default function AdminProducts() {
                   >
                     <option value="Laptop">Laptop</option>
                     <option value="Desktop">Desktop</option>
-                    <option value="Accessories">Accessories</option>
+                    <option value="Accessories">{t({ en: 'Accessories', vi: 'Phụ Kiện' })}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Processor</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Processor', vi: 'Bộ Xử Lý' })}</label>
                   <input
                     type="text"
                     value={formData.processor}
@@ -397,7 +399,7 @@ export default function AdminProducts() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Price *', vi: 'Giá *' })}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -409,7 +411,7 @@ export default function AdminProducts() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Stock *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Stock *', vi: 'Tồn Kho *' })}</label>
                   <input
                     type="number"
                     value={formData.stock}
@@ -473,16 +475,16 @@ export default function AdminProducts() {
                     disabled={formData.images.length >= 5}
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm"
                   >
-                    Add URL
+                    {t({ en: 'Add URL', vi: 'Thêm URL' })}
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  You can upload your own photos or add image URLs ({formData.images.length}/5)
+                  {t({ en: 'You can upload your own photos or add image URLs', vi: 'Bạn có thể tải lên ảnh của riêng mình hoặc thêm URL ảnh' })} ({formData.images.length}/5)
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Description', vi: 'Mô Tả' })}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -499,7 +501,7 @@ export default function AdminProducts() {
                     onChange={(e) => setFormData({...formData, featured: e.target.checked})}
                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Featured Product</span>
+                  <span className="ml-2 text-sm text-gray-700">{t({ en: 'Featured Product', vi: 'Sản Phẩm Nổi Bật' })}</span>
                 </label>
               </div>
 
@@ -508,7 +510,7 @@ export default function AdminProducts() {
                   type="submit"
                   className="flex-1 bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition"
                 >
-                  {editingProduct ? 'Update' : 'Create'}
+                  {editingProduct ? t({ en: 'Update', vi: 'Cập Nhật' }) : t({ en: 'Create', vi: 'Tạo' })}
                 </button>
                 <button
                   type="button"
@@ -518,7 +520,7 @@ export default function AdminProducts() {
                   }}
                   className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition"
                 >
-                  Cancel
+                  {t({ en: 'Cancel', vi: 'Hủy' })}
                 </button>
               </div>
             </form>

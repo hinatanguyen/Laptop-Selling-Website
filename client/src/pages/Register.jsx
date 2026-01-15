@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function Register() {
   const navigate = useNavigate()
   const { register } = useAuth()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     full_name: '',
@@ -26,12 +28,12 @@ export default function Register() {
     e.preventDefault()
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match')
+      toast.error(t({ en: 'Passwords do not match', vi: 'Mật khẩu không khớp' }))
       return
     }
 
     if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters')
+      toast.error(t({ en: 'Password must be at least 6 characters', vi: 'Mật khẩu phải có ít nhất 6 ký tự' }))
       return
     }
 
@@ -39,10 +41,10 @@ export default function Register() {
 
     try {
       await register(formData.email, formData.password, formData.full_name, formData.phone)
-      toast.success('Registration successful!')
+      toast.success(t({ en: 'Registration successful!', vi: 'Đăng ký thành công!' }))
       navigate('/')
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Registration failed')
+      toast.error(error.response?.data?.message || t({ en: 'Registration failed', vi: 'Đăng ký thất bại' }))
     } finally {
       setLoading(false)
     }
@@ -52,15 +54,15 @@ export default function Register() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-          <p className="mt-2 text-gray-600">Join us to start shopping</p>
+          <h2 className="text-3xl font-bold text-gray-900">{t({ en: 'Create Account', vi: 'Tạo Tài Khoản' })}</h2>
+          <p className="mt-2 text-gray-600">{t({ en: 'Join us to start shopping', vi: 'Tham gia với chúng tôi để bắt đầu mua sắm' })}</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name *
+                {t({ en: 'Full Name', vi: 'Họ và Tên' })} *
               </label>
               <input
                 type="text"
@@ -75,7 +77,7 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address *
+                {t({ en: 'Email Address', vi: 'Địa Chỉ Email' })} *
               </label>
               <input
                 type="email"
@@ -90,7 +92,7 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
+                {t({ en: 'Phone Number', vi: 'Số Điện Thoại' })}
               </label>
               <input
                 type="tel"
@@ -104,7 +106,7 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password *
+                {t({ en: 'Password', vi: 'Mật Khẩu' })} *
               </label>
               <input
                 type="password"
@@ -115,12 +117,12 @@ export default function Register() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="••••••••"
               />
-              <p className="mt-1 text-sm text-gray-500">Must be at least 6 characters</p>
+              <p className="mt-1 text-sm text-gray-500">{t({ en: 'Must be at least 6 characters', vi: 'Phải có ít nhất 6 ký tự' })}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password *
+                {t({ en: 'Confirm Password', vi: 'Xác Nhận Mật Khẩu' })} *
               </label>
               <input
                 type="password"
@@ -138,15 +140,15 @@ export default function Register() {
               disabled={loading}
               className="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition font-semibold disabled:opacity-50"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? t({ en: 'Creating account...', vi: 'Đang tạo tài khoản...' }) : t({ en: 'Create Account', vi: 'Tạo Tài Khoản' })}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Already have an account?{' '}
+              {t({ en: 'Already have an account?', vi: 'Đã có tài khoản?' })}{' '}
               <Link to="/login" className="text-primary-600 hover:text-primary-700 font-semibold">
-                Sign in
+                {t({ en: 'Sign in', vi: 'Đăng nhập' })}
               </Link>
             </p>
           </div>

@@ -10,35 +10,37 @@ import {
 } from '@heroicons/react/24/outline'
 import { useCartStore } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
+import LanguageSwitcher from '../LanguageSwitcher'
 
 const categories = [
   {
-    name: 'Laptops',
+    name: { en: 'Laptops', vi: 'Laptop' },
     items: [
-      { name: 'Gaming Laptops', href: '/products?category=Gaming' },
-      { name: 'Business Laptops', href: '/products?category=Business' },
-      { name: 'Ultrabooks', href: '/products?category=Ultrabook' },
-      { name: '2-in-1 Laptops', href: '/products?category=2-in-1' },
+      { name: { en: 'Gaming Laptops', vi: 'Laptop Gaming' }, href: '/products?category=Gaming' },
+      { name: { en: 'Business Laptops', vi: 'Laptop Doanh Nghiệp' }, href: '/products?category=Business' },
+      { name: { en: 'Ultrabooks', vi: 'Ultrabook' }, href: '/products?category=Ultrabook' },
+      { name: { en: '2-in-1 Laptops', vi: 'Laptop 2-trong-1' }, href: '/products?category=2-in-1' },
     ],
   },
   {
-    name: 'Desktops',
+    name: { en: 'Desktops', vi: 'Máy Bàn' },
     items: [
-      { name: 'Gaming PCs', href: '/products?category=Gaming' },
-      { name: 'Workstations', href: '/products?category=Workstation' },
-      { name: 'All-in-One', href: '/products?category=All-in-One' },
-      { name: 'Mini PCs', href: '/products?category=Mini PC' },
+      { name: { en: 'Gaming PCs', vi: 'PC Gaming' }, href: '/products?category=Gaming' },
+      { name: { en: 'Workstations', vi: 'Máy Trạm' }, href: '/products?category=Workstation' },
+      { name: { en: 'All-in-One', vi: 'Máy Tích Hợp' }, href: '/products?category=All-in-One' },
+      { name: { en: 'Mini PCs', vi: 'PC Mini' }, href: '/products?category=Mini PC' },
     ],
   },
   {
-    name: 'Brands',
+    name: { en: 'Brands', vi: 'Thương Hiệu' },
     items: [
-      { name: 'Dell', href: '/products?brand=Dell' },
-      { name: 'HP', href: '/products?brand=HP' },
-      { name: 'Lenovo', href: '/products?brand=Lenovo' },
-      { name: 'ASUS', href: '/products?brand=Asus' },
-      { name: 'Acer', href: '/products?brand=Acer' },
-      { name: 'MSI', href: '/products?brand=MSI' },
+      { name: { en: 'Dell', vi: 'Dell' }, href: '/products?brand=Dell' },
+      { name: { en: 'HP', vi: 'HP' }, href: '/products?brand=HP' },
+      { name: { en: 'Lenovo', vi: 'Lenovo' }, href: '/products?brand=Lenovo' },
+      { name: { en: 'ASUS', vi: 'ASUS' }, href: '/products?brand=Asus' },
+      { name: { en: 'Acer', vi: 'Acer' }, href: '/products?brand=Acer' },
+      { name: { en: 'MSI', vi: 'MSI' }, href: '/products?brand=MSI' },
     ],
   },
 ]
@@ -48,6 +50,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('')
   const cartItemCount = useCartStore((state) => state.getItemCount())
   const { user, logout, isAdmin } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
 
   const handleSearch = (e) => {
@@ -69,11 +72,11 @@ export default function Header() {
           </div>
           <div className="flex gap-4">
             {user ? (
-              <span>Welcome, {user.full_name || user.email}!</span>
+              <span>{t({ en: 'Welcome', vi: 'Chào mừng' })}, {user.full_name || user.email}!</span>
             ) : (
               <>
-                <Link to="/login" className="hover:underline">Login</Link>
-                <Link to="/register" className="hover:underline">Register</Link>
+                <Link to="/login" className="hover:underline">{t({ en: 'Login', vi: 'Đăng nhập' })}</Link>
+                <Link to="/register" className="hover:underline">{t({ en: 'Register', vi: 'Đăng ký' })}</Link>
               </>
             )}
           </div>
@@ -94,13 +97,13 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6">
             <Link to="/" className="text-gray-700 hover:text-primary-600 font-semibold transition">
-              Home
+              {t({ en: 'Home', vi: 'Trang chủ' })}
             </Link>
             
             {/* Categories Mega Menu */}
             <Menu as="div" className="relative">
               <Menu.Button className="text-gray-700 hover:text-primary-600 font-semibold transition flex items-center gap-1">
-                Categories
+                {t({ en: 'Categories', vi: 'Danh mục' })}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -117,13 +120,13 @@ export default function Header() {
               >
                 <Menu.Items className="absolute left-0 mt-2 w-screen max-w-4xl bg-white rounded-xl shadow-2xl p-8 grid grid-cols-3 gap-8">
                   {categories.map((category) => (
-                    <div key={category.name}>
+                    <div key={t(category.name)}>
                       <h3 className="font-bold text-gray-900 mb-4 border-b-2 border-primary-600 pb-2">
-                        {category.name}
+                        {t(category.name)}
                       </h3>
                       <ul className="space-y-2">
                         {category.items.map((item) => (
-                          <Menu.Item key={item.name}>
+                          <Menu.Item key={t(item.name)}>
                             {({ active }) => (
                               <Link
                                 to={item.href}
@@ -131,7 +134,7 @@ export default function Header() {
                                   active ? 'text-primary-600 pl-2' : 'text-gray-600'
                                 } transition-all`}
                               >
-                                {item.name}
+                                {t(item.name)}
                               </Link>
                             )}
                           </Menu.Item>
@@ -144,12 +147,12 @@ export default function Header() {
             </Menu>
 
             <Link to="/products" className="text-gray-700 hover:text-primary-600 font-semibold transition">
-              Products
+              {t({ en: 'Products', vi: 'Sản phẩm' })}
             </Link>
             
             {isAdmin && (
               <Link to="/admin" className="text-gray-700 hover:text-primary-600 font-semibold transition">
-                Admin
+                {t({ en: 'Admin', vi: 'Quản lý' })}
               </Link>
             )}
           </nav>
@@ -163,7 +166,7 @@ export default function Header() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products..."
+                  placeholder={t({ en: 'Search products...', vi: 'Tìm kiếm sản phẩm...' })}
                   className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
                 <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -188,12 +191,12 @@ export default function Header() {
                   <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
                     <Menu.Item>
                       <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Profile
+                        {t({ en: 'Profile', vi: 'Hồ sơ' })}
                       </Link>
                     </Menu.Item>
                     <Menu.Item>
                       <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        My Orders
+                        {t({ en: 'My Orders', vi: 'Đơn hàng của tôi' })}
                       </Link>
                     </Menu.Item>
                     <Menu.Item>
@@ -201,7 +204,7 @@ export default function Header() {
                         onClick={logout}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                       >
-                        Logout
+                        {t({ en: 'Logout', vi: 'Đăng xuất' })}
                       </button>
                     </Menu.Item>
                   </Menu.Items>
@@ -223,6 +226,9 @@ export default function Header() {
               )}
             </Link>
 
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -242,10 +248,10 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden border-t">
           <div className="px-4 py-4 space-y-4">
-            <Link to="/" className="block text-gray-700 font-semibold">Home</Link>
-            <Link to="/products" className="block text-gray-700 font-semibold">Products</Link>
+            <Link to="/" className="block text-gray-700 font-semibold">{t({ en: 'Home', vi: 'Trang chủ' })}</Link>
+            <Link to="/products" className="block text-gray-700 font-semibold">{t({ en: 'Products', vi: 'Sản phẩm' })}</Link>
             {isAdmin && (
-              <Link to="/admin" className="block text-gray-700 font-semibold">Admin</Link>
+              <Link to="/admin" className="block text-gray-700 font-semibold">{t({ en: 'Admin', vi: 'Quản lý' })}</Link>
             )}
           </div>
         </div>

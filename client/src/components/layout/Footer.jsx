@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function Footer() {
+  const { t } = useLanguage()
+  
   return (
     <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-white mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -14,7 +17,10 @@ export default function Footer() {
               <span>TechStore</span>
             </div>
             <p className="text-gray-400 mb-4">
-              Your trusted destination for premium laptops and computers. Quality products, excellent service.
+              {t({ 
+                en: 'Your trusted destination for premium laptops and computers. Quality products, excellent service.',
+                vi: 'Điểm đến tin cậy cho laptop và máy tính cao cấp. Sản phẩm chất lượng, dịch vụ tuyệt vời.'
+              })}
             </p>
             <div className="flex gap-4">
               <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-600 transition">
@@ -37,30 +43,30 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-4">{t({ en: 'Quick Links', vi: 'Liên Kết Nhanh' })}</h3>
             <ul className="space-y-2 text-gray-400">
-              <li><Link to="/" className="hover:text-white transition">Home</Link></li>
-              <li><Link to="/products" className="hover:text-white transition">Products</Link></li>
-              <li><Link to="/about" className="hover:text-white transition">About Us</Link></li>
-              <li><Link to="/contact" className="hover:text-white transition">Contact</Link></li>
+              <li><Link to="/" className="hover:text-white transition">{t({ en: 'Home', vi: 'Trang chủ' })}</Link></li>
+              <li><Link to="/products" className="hover:text-white transition">{t({ en: 'Products', vi: 'Sản phẩm' })}</Link></li>
+              <li><Link to="/about" className="hover:text-white transition">{t({ en: 'About Us', vi: 'Về chúng tôi' })}</Link></li>
+              <li><Link to="/contact" className="hover:text-white transition">{t({ en: 'Contact', vi: 'Liên hệ' })}</Link></li>
             </ul>
           </div>
 
           {/* Customer Service */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Customer Service</h3>
+            <h3 className="text-lg font-semibold mb-4">{t({ en: 'Customer Service', vi: 'Dịch Vụ Khách Hàng' })}</h3>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#" className="hover:text-white transition">FAQ</a></li>
-              <li><a href="#" className="hover:text-white transition">Shipping Info</a></li>
-              <li><a href="#" className="hover:text-white transition">Returns</a></li>
-              <li><a href="#" className="hover:text-white transition">Warranty</a></li>
-              <li><a href="#" className="hover:text-white transition">Support</a></li>
+              <li><Link to="/faq" className="hover:text-white transition">{t({ en: 'FAQ', vi: 'Câu hỏi thường gặp' })}</Link></li>
+              <li><Link to="/shipping-info" className="hover:text-white transition">{t({ en: 'Shipping Info', vi: 'Thông tin vận chuyển' })}</Link></li>
+              <li><Link to="/returns" className="hover:text-white transition">{t({ en: 'Returns', vi: 'Đổi trả' })}</Link></li>
+              <li><Link to="/warranty" className="hover:text-white transition">{t({ en: 'Warranty', vi: 'Bảo hành' })}</Link></li>
+              <li><Link to="/support" className="hover:text-white transition">{t({ en: 'Support', vi: 'Hỗ trợ' })}</Link></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
+            <h3 className="text-lg font-semibold mb-4">{t({ en: 'Contact Us', vi: 'Liên Hệ' })}</h3>
             <ul className="space-y-2 text-gray-400">
               <li className="flex items-start gap-2">
                 <svg className="w-5 h-5 mt-0.5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,9 +92,9 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2026 TechStore. All rights reserved. | 
-            <a href="#" className="text-primary-500 hover:text-primary-400 ml-2">Privacy Policy</a> | 
-            <a href="#" className="text-primary-500 hover:text-primary-400 ml-2">Terms of Service</a>
+          <p>&copy; 2026 TechStore. {t({ en: 'All rights reserved', vi: 'Bảo lưu mọi quyền' })}. | 
+            <Link to="/privacy" className="text-primary-500 hover:text-primary-400 ml-2">{t({ en: 'Privacy Policy', vi: 'Chính sách bảo mật' })}</Link> | 
+            <Link to="/terms" className="text-primary-500 hover:text-primary-400 ml-2">{t({ en: 'Terms of Service', vi: 'Điều khoản dịch vụ' })}</Link>
           </p>
         </div>
       </div>

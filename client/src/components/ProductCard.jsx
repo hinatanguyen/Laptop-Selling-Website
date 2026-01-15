@@ -2,15 +2,20 @@ import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { ShoppingCartIcon } from '@heroicons/react/24/outline'
 import { useCartStore } from '../context/CartContext'
+import { useLanguage } from '../context/LanguageContext'
 import toast from 'react-hot-toast'
 
 function ProductCard({ product }) {
+  const { t } = useLanguage()
   const addItem = useCartStore((state) => state.addItem)
 
   const handleAddToCart = (e) => {
     e.preventDefault()
     addItem(product)
-    toast.success(`${product.name} added to cart!`)
+    toast.success(t({ 
+      en: `${product.name} added to cart!`,
+      vi: `Đã thêm ${product.name} vào giỏ hàng!`
+    }))
   }
 
   // Get first image from images array or fallback to image_url
@@ -32,13 +37,13 @@ function ProductCard({ product }) {
         />
         {product.featured && (
           <span className="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-            Featured
+            {t({ en: 'Featured', vi: 'Nổi Bật' })}
           </span>
         )}
         {product.stock === 0 && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <span className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold">
-              Out of Stock
+              {t({ en: 'Out of Stock', vi: 'Hết Hàng' })}
             </span>
           </div>
         )}
@@ -64,7 +69,7 @@ function ProductCard({ product }) {
             </p>
             {product.stock > 0 && product.stock <= 5 && (
               <p className="text-xs text-orange-600 font-semibold">
-                Only {product.stock} left!
+                {t({ en: `Only ${product.stock} left!`, vi: `Chỉ còn ${product.stock}!` })}
               </p>
             )}
           </div>
@@ -75,7 +80,7 @@ function ProductCard({ product }) {
             className="btn-primary px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
           >
             <ShoppingCartIcon className="w-4 h-4" />
-            Add
+            {t({ en: 'Add', vi: 'Thêm' })}
           </button>
         </div>
       </div>

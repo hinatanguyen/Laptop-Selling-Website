@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { adminAPI } from '../../services/api'
 import Loading from '../../components/Loading'
+import { useLanguage } from '../../context/LanguageContext'
 
 const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
 
@@ -14,9 +15,21 @@ const statusColors = {
 }
 
 export default function AdminOrders() {
+  const { t } = useLanguage()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState('all')
+
+  const translateStatus = (status) => {
+    const statusTranslations = {
+      pending: t({ en: 'Pending', vi: 'Đang Chờ' }),
+      processing: t({ en: 'Processing', vi: 'Đang Xử Lý' }),
+      shipped: t({ en: 'Shipped', vi: 'Đã Gửi' }),
+      delivered: t({ en: 'Delivered', vi: 'Đã Giao' }),
+      cancelled: t({ en: 'Cancelled', vi: 'Đã Hủy' })
+    }
+    return statusTranslations[status] || status
+  }
 
   useEffect(() => {
     loadOrders()
@@ -28,7 +41,7 @@ export default function AdminOrders() {
       const response = await adminAPI.getOrders(params)
       setOrders(response.data)
     } catch (error) {
-      toast.error('Failed to load orders')
+      toast.error(t({ en: 'Failed to load orders', vi: 'Không thể tải đơn hàng' }))
     } finally {
       setLoading(false)
     }
@@ -37,10 +50,10 @@ export default function AdminOrders() {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await adminAPI.updateOrderStatus(orderId, newStatus)
-      toast.success('Order status updated')
+      toast.success(t({ en: 'Order status updated', vi: 'Cập nhật trạng thái đơn hàng thành công' }))
       loadOrders()
     } catch (error) {
-      toast.error('Failed to update order status')
+      toast.error(t({ en: 'Failed to update order status', vi: 'Không thể cập nhật trạng thái đơn hàng' }))
     }
   }
 
@@ -48,22 +61,22 @@ export default function AdminOrders() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Manage Orders</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t({ en: 'Manage Orders', vi: 'Quản Lý Đơn Hàng' })}</h1>
 
       {/* Filter */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Filter by Status', vi: 'Lọc Theo Trạng Thái' })}</label>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
         >
-          <option value="all">All Orders</option>
-          {statusOptions.map((status) => (
-            <option key={status} value={status}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </option>
-          ))}
+          <option value="all">{t({ en: 'All Orders', vi: 'Tất Cả Đơn Hàng' })}</option>
+          <option value="pending">{t({ en: 'Pending', vi: 'Đang Chờ' })}</option>
+          <option value="processing">{t({ en: 'Processing', vi: 'Đang Xử Lý' })}</option>
+          <option value="shipped">{t({ en: 'Shipped', vi: 'Đã Gửi' })}</option>
+          <option value="delivered">{t({ en: 'Delivered', vi: 'Đã Giao' })}</option>
+          <option value="cancelled">{t({ en: 'Cancelled', vi: 'Đã Hủy' })}</option>
         </select>
       </div>
 
@@ -73,25 +86,25 @@ export default function AdminOrders() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Order ID
+                {t({ en: 'Order ID', vi: 'Mã Đơn Hàng' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Customer
+                {t({ en: 'Customer', vi: 'Khách Hàng' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Items
+                {t({ en: 'Items', vi: 'Sản Phẩm' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Total
+                {t({ en: 'Total', vi: 'Tổng Cộng' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
+                {t({ en: 'Status', vi: 'Trạng Thái' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Date
+                {t({ en: 'Date', vi: 'Ngày' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Actions
+                {t({ en: 'Actions', vi: 'Hành Động' })}
               </th>
             </tr>
           </thead>
@@ -116,7 +129,7 @@ export default function AdminOrders() {
                     ))}
                     {order.items?.length > 2 && (
                       <p className="text-gray-500 text-xs mt-1">
-                        +{order.items.length - 2} more items
+                        +{order.items.length - 2} {t({ en: 'more items', vi: 'sản phẩm khác' })}
                       </p>
                     )}
                   </div>
@@ -126,7 +139,7 @@ export default function AdminOrders() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 text-xs rounded-full ${statusColors[order.status]}`}>
-                    {order.status}
+                    {translateStatus(order.status)}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -140,7 +153,7 @@ export default function AdminOrders() {
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                        {translateStatus(status)}
                       </option>
                     ))}
                   </select>
@@ -152,7 +165,7 @@ export default function AdminOrders() {
 
         {orders.length === 0 && (
           <div className="text-center py-12 text-gray-500">
-            No orders found
+            {t({ en: 'No orders found', vi: 'Không tìm thấy đơn hàng nào' })}
           </div>
         )}
       </div>

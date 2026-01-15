@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { adminAPI } from '../../services/api'
 import Loading from '../../components/Loading'
+import { useLanguage } from '../../context/LanguageContext'
 import { UserIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 
 export default function AdminUsers() {
+  const { t } = useLanguage()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -17,7 +19,7 @@ export default function AdminUsers() {
       const response = await adminAPI.getUsers()
       setUsers(response.data || [])
     } catch (error) {
-      toast.error('Failed to load users')
+      toast.error(t({ en: 'Failed to load users', vi: 'Không thể tải người dùng' }))
     } finally {
       setLoading(false)
     }
@@ -36,9 +38,9 @@ export default function AdminUsers() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Manage Users</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Manage Users', vi: 'Quản Lý Người Dùng' })}</h1>
         <div className="text-sm text-gray-600">
-          Total Users: <span className="font-semibold">{users.length}</span>
+          {t({ en: 'Total Users:', vi: 'Tổng Số Người Dùng:' })} <span className="font-semibold">{users.length}</span>
         </div>
       </div>
 
@@ -48,19 +50,19 @@ export default function AdminUsers() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                User
+                {t({ en: 'User', vi: 'Người Dùng' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Email
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Phone
+                {t({ en: 'Phone', vi: 'Số Điện Thoại' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Role
+                {t({ en: 'Role', vi: 'Vai Trò' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Joined
+                {t({ en: 'Joined', vi: 'Ngày Tham Gia' })}
               </th>
             </tr>
           </thead>
@@ -68,7 +70,7 @@ export default function AdminUsers() {
             {users.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
-                  No users found
+                  {t({ en: 'No users found', vi: 'Không tìm thấy người dùng nào' })}
                 </td>
               </tr>
             ) : (

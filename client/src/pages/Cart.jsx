@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { TrashIcon, MinusIcon, PlusIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'
 import { useCartStore } from '../context/CartContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function Cart() {
+  const { t } = useLanguage()
   const { items, removeItem, updateQuantity, getTotal } = useCartStore()
 
   if (items.length === 0) {
@@ -10,13 +12,13 @@ export default function Cart() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
           <ShoppingBagIcon className="mx-auto h-24 w-24 text-gray-400" />
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">Your cart is empty</h2>
-          <p className="mt-2 text-gray-600">Start shopping to add items to your cart</p>
+          <h2 className="mt-6 text-3xl font-bold text-gray-900">{t({ en: 'Your cart is empty', vi: 'Giỏ hàng của bạn trống' })}</h2>
+          <p className="mt-2 text-gray-600">{t({ en: 'Start shopping to add items to your cart', vi: 'Bắt đầu mua sắm để thêm sản phẩm vào giỏ hàng' })}</p>
           <Link
             to="/products"
             className="mt-8 inline-block bg-primary-600 text-white px-8 py-3 rounded-lg hover:bg-primary-700 transition"
           >
-            Continue Shopping
+            {t({ en: 'Continue Shopping', vi: 'Tiếp Tục Mua Sắm' })}
           </Link>
         </div>
       </div>
@@ -30,7 +32,7 @@ export default function Cart() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t({ en: 'Shopping Cart', vi: 'Giỏ Hàng' })}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
@@ -41,7 +43,9 @@ export default function Cart() {
               className="bg-white rounded-lg shadow-sm p-6 flex items-center gap-6"
             >
               <img
-                src={item.image}
+                src={item.images && item.images.length > 0
+                  ? item.images[0]
+                  : item.image_url || item.image || 'https://via.placeholder.com/400x300?text=No+Image'}
                 alt={item.name}
                 className="w-24 h-24 object-cover rounded"
               />
@@ -84,7 +88,7 @@ export default function Cart() {
                   className="mt-2 text-red-600 hover:text-red-700 flex items-center gap-1"
                 >
                   <TrashIcon className="h-4 w-4" />
-                  Remove
+                  {t({ en: 'Remove', vi: 'Xóa' })}
                 </button>
               </div>
             </div>
@@ -94,25 +98,25 @@ export default function Cart() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{t({ en: 'Order Summary', vi: 'Tóm Tắt Đơn Hàng' })}</h2>
 
             <div className="space-y-3 border-b border-gray-200 pb-4">
               <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
+                <span>{t({ en: 'Subtotal', vi: 'Tạm Tính' })}</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Shipping</span>
-                <span className="text-green-600 font-semibold">Free</span>
+                <span>{t({ en: 'Shipping', vi: 'Phí Vận Chuyển' })}</span>
+                <span className="text-green-600 font-semibold">{t({ en: 'Free', vi: 'Miễn Phí' })}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Tax (10%)</span>
+                <span>{t({ en: 'Tax (10%)', vi: 'Thuế (10%)' })}</span>
                 <span>${tax.toFixed(2)}</span>
               </div>
             </div>
 
             <div className="flex justify-between text-xl font-bold text-gray-900 mt-4">
-              <span>Total</span>
+              <span>{t({ en: 'Total', vi: 'Tổng Cộng' })}</span>
               <span>${total.toFixed(2)}</span>
             </div>
 
@@ -120,14 +124,14 @@ export default function Cart() {
               to="/checkout"
               className="w-full mt-6 bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition flex items-center justify-center gap-2"
             >
-              Proceed to Checkout
+              {t({ en: 'Proceed to Checkout', vi: 'Tiến Hành Thanh Toán' })}
             </Link>
 
             <Link
               to="/products"
               className="w-full mt-3 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition text-center block"
             >
-              Continue Shopping
+              {t({ en: 'Continue Shopping', vi: 'Tiếp Tục Mua Sắm' })}
             </Link>
           </div>
         </div>

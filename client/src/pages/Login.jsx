@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
@@ -25,10 +27,10 @@ export default function Login() {
 
     try {
       await login(formData.email, formData.password)
-      toast.success('Login successful!')
+      toast.success(t({ en: 'Login successful!', vi: 'Đăng nhập thành công!' }))
       navigate('/')
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Login failed')
+      toast.error(error.response?.data?.message || t({ en: 'Login failed', vi: 'Đăng nhập thất bại' }))
     } finally {
       setLoading(false)
     }
@@ -38,15 +40,15 @@ export default function Login() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="mt-2 text-gray-600">Sign in to your account</p>
+          <h2 className="text-3xl font-bold text-gray-900">{t({ en: 'Welcome Back', vi: 'Chào Mừng Trở Lại' })}</h2>
+          <p className="mt-2 text-gray-600">{t({ en: 'Sign in to your account', vi: 'Đăng nhập vào tài khoản của bạn' })}</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                {t({ en: 'Email Address', vi: 'Địa Chỉ Email' })}
               </label>
               <input
                 type="email"
@@ -61,7 +63,7 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                {t({ en: 'Password', vi: 'Mật Khẩu' })}
               </label>
               <input
                 type="password"
@@ -80,11 +82,11 @@ export default function Login() {
                   type="checkbox"
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                <span className="ml-2 text-sm text-gray-600">{t({ en: 'Remember me', vi: 'Ghi nhớ đăng nhập' })}</span>
               </label>
 
               <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
-                Forgot password?
+                {t({ en: 'Forgot password?', vi: 'Quên mật khẩu?' })}
               </Link>
             </div>
 
@@ -93,15 +95,15 @@ export default function Login() {
               disabled={loading}
               className="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition font-semibold disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t({ en: 'Signing in...', vi: 'Đang đăng nhập...' }) : t({ en: 'Sign In', vi: 'Đăng Nhập' })}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              {t({ en: "Don't have an account?", vi: 'Chưa có tài khoản?' })}{' '}
               <Link to="/register" className="text-primary-600 hover:text-primary-700 font-semibold">
-                Sign up
+                {t({ en: 'Sign up', vi: 'Đăng ký' })}
               </Link>
             </p>
           </div>

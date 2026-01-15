@@ -4,6 +4,7 @@ import { productsAPI } from '../services/api'
 import ProductCard from '../components/ProductCard'
 import FilterSidebar from '../components/FilterSidebar'
 import Loading from '../components/Loading'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -12,6 +13,7 @@ export default function Products() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const { t } = useLanguage()
   const limit = 30
   const [filters, setFilters] = useState({
     categories: searchParams.get('category') ? [searchParams.get('category')] : [],
@@ -93,7 +95,7 @@ export default function Products() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <div className="mb-8 text-sm text-gray-600">
-        <span>Home</span> &gt; <span className="font-semibold">Products</span>
+        <span>{t({ en: 'Home', vi: 'Trang chủ' })}</span> &gt; <span className="font-semibold">{t({ en: 'Products', vi: 'Sản phẩm' })}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -111,18 +113,18 @@ export default function Products() {
           {/* Header */}
           <div className="bg-white p-4 rounded-xl shadow-sm mb-6 flex justify-between items-center">
             <p className="text-gray-600">
-              Showing <span className="font-semibold">{products.length}</span> of <span className="font-semibold">{totalProducts}</span> products
+              {t({ en: 'Showing', vi: 'Hiển thị' })} <span className="font-semibold">{products.length}</span> {t({ en: 'of', vi: 'trên' })} <span className="font-semibold">{totalProducts}</span> {t({ en: 'products', vi: 'sản phẩm' })}
             </p>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="input py-2"
             >
-              <option value="featured">Featured</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name-asc">Name: A to Z</option>
-              <option value="name-desc">Name: Z to A</option>
+              <option value="featured">{t({ en: 'Featured', vi: 'Nổi bật' })}</option>
+              <option value="price-low">{t({ en: 'Price: Low to High', vi: 'Giá: Thấp đến Cao' })}</option>
+              <option value="price-high">{t({ en: 'Price: High to Low', vi: 'Giá: Cao đến Thấp' })}</option>
+              <option value="name-asc">{t({ en: 'Name: A to Z', vi: 'Tên: A đến Z' })}</option>
+              <option value="name-desc">{t({ en: 'Name: Z to A', vi: 'Tên: Z đến A' })}</option>
             </select>
           </div>
 
@@ -130,10 +132,10 @@ export default function Products() {
           {products.length === 0 ? (
             <div className="text-center py-20">
               <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-2xl font-semibold mb-2">No products found</h3>
-              <p className="text-gray-600 mb-6">Try adjusting your filters</p>
+              <h3 className="text-2xl font-semibold mb-2">{t({ en: 'No products found', vi: 'Không tìm thấy sản phẩm' })}</h3>
+              <p className="text-gray-600 mb-6">{t({ en: 'Try adjusting your filters', vi: 'Thử điều chỉnh bộ lọc của bạn' })}</p>
               <button onClick={clearFilters} className="btn-primary">
-                Clear Filters
+                {t({ en: 'Clear Filters', vi: 'Xóa Bộ Lọc' })}
               </button>
             </div>
           ) : (
@@ -152,7 +154,7 @@ export default function Products() {
                     disabled={currentPage === 1}
                     className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Previous
+                    {t({ en: 'Previous', vi: 'Trước' })}
                   </button>
                   
                   {[...Array(totalPages)].map((_, index) => {
@@ -187,7 +189,7 @@ export default function Products() {
                     disabled={currentPage === totalPages}
                     className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Next
+                    {t({ en: 'Next', vi: 'Tiếp' })}
                   </button>
                 </div>
               )}
