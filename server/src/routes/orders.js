@@ -5,14 +5,15 @@ import {
   getOrderById,
   cancelOrder
 } from '../controllers/orderController.js'
-import { authenticateToken } from '../middleware/auth.js'
+import { authenticateToken, optionalAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
-// All routes require authentication
-router.use(authenticateToken)
+// Create order allows guest checkout (optional auth)
+router.post('/', optionalAuth, createOrder)
 
-router.post('/', createOrder)
+// Other routes require authentication
+router.use(authenticateToken)
 router.get('/', getUserOrders)
 router.get('/:id', getOrderById)
 router.patch('/:id/cancel', cancelOrder)

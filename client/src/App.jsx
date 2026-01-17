@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import { LanguageProvider } from './context/LanguageContext'
 import { useEffect } from 'react'
+import useGlobalAdminNotifications from './hooks/useGlobalAdminNotifications'
 
 // Layout
 import Layout from './components/layout/Layout'
@@ -44,6 +45,7 @@ function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
+        <AppContent />
         <Toaster 
           position="top-right"
           toastOptions={{
@@ -52,27 +54,32 @@ function App() {
               background: '#363636',
               color: '#fff',
             },
-            success: {
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
-              },
-            },
           }}
         />
-        
-        <Routes>
-        {/* Public Routes */}
+      </AuthProvider>
+    </LanguageProvider>
+  )
+}
+
+// Separate component to have access to auth context
+function AppContent() {
+  // Initialize global admin notifications
+  const { isConnected } = useGlobalAdminNotifications()
+
+  return (
+    <div>
+      {/* Show connection status for admins */}
+      {isConnected && (
+        <div className="fixed bottom-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs z-50">
+          🔔 Live Notifications Active
+        </div>
+      )}
+      
+      <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="products" element={<Products />} />
-          <Route path="products/:id" element={<ProductDetail />} />
+          <Route path="products/:slug" element={<ProductDetail />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />
           <Route path="login" element={<Login />} />
@@ -98,13 +105,13 @@ function App() {
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="admin/products" element={<AdminProducts />} />
           <Route path="admin/orders" element={<AdminOrders />} />
+          <Route path="admin/orders/:id" element={<OrderDetail />} />
           <Route path="admin/users" element={<AdminUsers />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
       </Routes>
-      </AuthProvider>
-    </LanguageProvider>
+    </div>
   )
 }
 

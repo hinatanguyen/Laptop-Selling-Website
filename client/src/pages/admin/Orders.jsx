@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { adminAPI } from '../../services/api'
 import Loading from '../../components/Loading'
 import { useLanguage } from '../../context/LanguageContext'
+import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
 const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
 
@@ -16,6 +18,7 @@ const statusColors = {
 
 export default function AdminOrders() {
   const { t } = useLanguage()
+  const navigate = useNavigate()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState('all')
@@ -61,7 +64,18 @@ export default function AdminOrders() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t({ en: 'Manage Orders', vi: 'Quản Lý Đơn Hàng' })}</h1>
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4 mb-8">
+        <button
+          onClick={() => navigate('/admin')}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+          <span className="font-medium">{t({ en: 'Back to Dashboard', vi: 'Về Bảng Điều Khiển' })}</span>
+        </button>
+        <div className="h-6 w-px bg-gray-300"></div>
+        <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Manage Orders', vi: 'Quản Lý Đơn Hàng' })}</h1>
+      </div>
 
       {/* Filter */}
       <div className="mb-6">
@@ -112,12 +126,24 @@ export default function AdminOrders() {
             {orders.map((order) => (
               <tr key={order.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  #{order.id}
+                  <Link 
+                    to={`/admin/orders/${order.id}`} 
+                    className="text-primary-600 hover:text-primary-800 font-medium"
+                  >
+                    #{order.id}
+                  </Link>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div>
                     <p className="text-sm font-medium text-gray-900">{order.full_name}</p>
                     <p className="text-sm text-gray-500">{order.email}</p>
+                    <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                      order.customer_type === 'Guest' 
+                        ? 'bg-orange-100 text-orange-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {order.customer_type}
+                    </span>
                   </div>
                 </td>
                 <td className="px-6 py-4">

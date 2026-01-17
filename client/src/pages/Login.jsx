@@ -1,18 +1,28 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 
 export default function Login() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const [searchParams] = useSearchParams()
+  const { login, user } = useAuth()
   const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
+
+  const redirectTo = searchParams.get('redirect') || '/'
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate(redirectTo)
+    }
+  }, [user, navigate, redirectTo])
 
   const handleChange = (e) => {
     setFormData({
@@ -28,7 +38,7 @@ export default function Login() {
     try {
       await login(formData.email, formData.password)
       toast.success(t({ en: 'Login successful!', vi: 'Đăng nhập thành công!' }))
-      navigate('/')
+      navigate(redirectTo)
     } catch (error) {
       toast.error(error.response?.data?.message || t({ en: 'Login failed', vi: 'Đăng nhập thất bại' }))
     } finally {

@@ -8,8 +8,8 @@ function FilterSidebar({ filters, onFilterChange, onClearFilters }) {
     { value: 'Gaming', label: { en: 'Gaming', vi: 'Gaming' } },
     { value: 'Business', label: { en: 'Business', vi: 'Doanh nghiệp' } },
     { value: 'Ultrabook', label: { en: 'Ultrabook', vi: 'Ultrabook' } },
-    { value: 'Workstation', label: { en: 'Workstation', vi: 'Máy trạm' } },
-    { value: 'Professional', label: { en: 'Professional', vi: 'Chuyên nghiệp' } }
+    { value: 'Professional', label: { en: 'Professional', vi: 'Chuyên nghiệp' } },
+    { value: '2-in-1', label: { en: '2-in-1', vi: '2-in-1' } }
   ]
   
   return (
@@ -46,7 +46,7 @@ function FilterSidebar({ filters, onFilterChange, onClearFilters }) {
       <div className="mb-6">
         <h4 className="font-semibold mb-3">{t({ en: 'Brand', vi: 'Thương Hiệu' })}</h4>
         <div className="space-y-2">
-          {['Dell', 'HP', 'Lenovo', 'Apple', 'Asus', 'Acer', 'MSI'].map((brand) => (
+          {['Dell', 'Apple', 'Lenovo', 'HP', 'ASUS', 'Microsoft', 'Acer', 'Razer'].map((brand) => (
             <label key={brand} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"

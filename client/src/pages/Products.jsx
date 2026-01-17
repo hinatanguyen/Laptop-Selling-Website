@@ -23,6 +23,21 @@ export default function Products() {
   })
   const [sortBy, setSortBy] = useState('featured')
 
+  // Update filters when URL search params change
+  useEffect(() => {
+    const categoryParam = searchParams.get('category')
+    const brandParam = searchParams.get('brand')
+    const searchParam = searchParams.get('search')
+    
+    setFilters(prev => ({
+      ...prev,
+      categories: categoryParam ? [categoryParam] : [],
+      brands: brandParam ? [brandParam] : [],
+      search: searchParam || ''
+    }))
+    setCurrentPage(1)
+  }, [searchParams])
+
   useEffect(() => {
     loadProducts()
   }, [filters, sortBy, currentPage])

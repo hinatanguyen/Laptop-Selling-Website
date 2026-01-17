@@ -8,6 +8,8 @@ import { RateLimiterMemory } from 'rate-limiter-flexible'
 import pool from './config/database.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { createServer } from 'http'
+import notificationService from './services/notificationService.js'
 
 import productRoutes from './routes/products.js'
 import authRoutes from './routes/auth.js'
@@ -15,6 +17,7 @@ import cartRoutes from './routes/cart.js'
 import orderRoutes from './routes/orders.js'
 import adminRoutes from './routes/admin.js'
 import uploadRoutes from './routes/upload.js'
+import reviewRoutes from './routes/reviews.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -23,7 +26,11 @@ const __dirname = path.dirname(__filename)
 dotenv.config()
 
 const app = express()
+const server = createServer(app)
 const PORT = process.env.PORT || 5000
+
+// Initialize WebSocket for real-time notifications
+notificationService.init(server)
 
 // Rate limiting
 const rateLimiter = new RateLimiterMemory({
@@ -82,6 +89,7 @@ app.use('/api/cart', cartRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/upload', uploadRoutes)
+app.use('/api/reviews', reviewRoutes)
 
 // Health check
 app.get('/health', async (req, res) => {
@@ -128,10 +136,11 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' })
 })
 
-app.listen(PORT, async () => {
+server.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`)
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`)
   console.log(`🌐 CORS enabled for: http://localhost:3000`)
+  console.log(`🔌 WebSocket server initialized for real-time notifications`)
   
   // Test database connection
   try {

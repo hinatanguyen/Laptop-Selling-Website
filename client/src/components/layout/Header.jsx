@@ -15,32 +15,32 @@ import LanguageSwitcher from '../LanguageSwitcher'
 
 const categories = [
   {
-    name: { en: 'Laptops', vi: 'Laptop' },
+    name: { en: 'View All', vi: 'Xem Tất Cả' },
+    items: [
+      { name: { en: 'All Products', vi: 'Tất Cả Sản Phẩm' }, href: '/products' },
+    ],
+  },
+  {
+    name: { en: 'Categories', vi: 'Danh Mục' },
     items: [
       { name: { en: 'Gaming Laptops', vi: 'Laptop Gaming' }, href: '/products?category=Gaming' },
       { name: { en: 'Business Laptops', vi: 'Laptop Doanh Nghiệp' }, href: '/products?category=Business' },
       { name: { en: 'Ultrabooks', vi: 'Ultrabook' }, href: '/products?category=Ultrabook' },
+      { name: { en: 'Professional', vi: 'Chuyên nghiệp' }, href: '/products?category=Professional' },
       { name: { en: '2-in-1 Laptops', vi: 'Laptop 2-trong-1' }, href: '/products?category=2-in-1' },
-    ],
-  },
-  {
-    name: { en: 'Desktops', vi: 'Máy Bàn' },
-    items: [
-      { name: { en: 'Gaming PCs', vi: 'PC Gaming' }, href: '/products?category=Gaming' },
-      { name: { en: 'Workstations', vi: 'Máy Trạm' }, href: '/products?category=Workstation' },
-      { name: { en: 'All-in-One', vi: 'Máy Tích Hợp' }, href: '/products?category=All-in-One' },
-      { name: { en: 'Mini PCs', vi: 'PC Mini' }, href: '/products?category=Mini PC' },
     ],
   },
   {
     name: { en: 'Brands', vi: 'Thương Hiệu' },
     items: [
       { name: { en: 'Dell', vi: 'Dell' }, href: '/products?brand=Dell' },
+      { name: { en: 'Apple', vi: 'Apple' }, href: '/products?brand=Apple' },
+      { name: { en: 'ASUS', vi: 'ASUS' }, href: '/products?brand=ASUS' },
       { name: { en: 'HP', vi: 'HP' }, href: '/products?brand=HP' },
       { name: { en: 'Lenovo', vi: 'Lenovo' }, href: '/products?brand=Lenovo' },
-      { name: { en: 'ASUS', vi: 'ASUS' }, href: '/products?brand=Asus' },
+      { name: { en: 'Microsoft', vi: 'Microsoft' }, href: '/products?brand=Microsoft' },
       { name: { en: 'Acer', vi: 'Acer' }, href: '/products?brand=Acer' },
-      { name: { en: 'MSI', vi: 'MSI' }, href: '/products?brand=MSI' },
+      { name: { en: 'Razer', vi: 'Razer' }, href: '/products?brand=Razer' },
     ],
   },
 ]
@@ -100,10 +100,10 @@ export default function Header() {
               {t({ en: 'Home', vi: 'Trang chủ' })}
             </Link>
             
-            {/* Categories Mega Menu */}
+            {/* Products Mega Menu */}
             <Menu as="div" className="relative">
               <Menu.Button className="text-gray-700 hover:text-primary-600 font-semibold transition flex items-center gap-1">
-                {t({ en: 'Categories', vi: 'Danh mục' })}
+                {t({ en: 'Products', vi: 'Sản phẩm' })}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -145,9 +145,17 @@ export default function Header() {
                 </Menu.Items>
               </Transition>
             </Menu>
+            
+            <Link to="/about" className="text-gray-700 hover:text-primary-600 font-semibold transition">
+              {t({ en: 'About', vi: 'Giới thiệu' })}
+            </Link>
 
-            <Link to="/products" className="text-gray-700 hover:text-primary-600 font-semibold transition">
-              {t({ en: 'Products', vi: 'Sản phẩm' })}
+            <Link to="/support" className="text-gray-700 hover:text-primary-600 font-semibold transition">
+              {t({ en: 'Support', vi: 'Hỗ trợ' })}
+            </Link>
+
+            <Link to="/contact" className="text-gray-700 hover:text-primary-600 font-semibold transition">
+              {t({ en: 'Contact', vi: 'Liên hệ' })}
             </Link>
             
             {isAdmin && (

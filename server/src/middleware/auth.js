@@ -17,6 +17,27 @@ export const authenticateToken = (req, res, next) => {
   }
 }
 
+// Optional authentication - user can be null for guest access
+export const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+
+  if (!token) {
+    req.user = null
+    return next()
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.JWT_SECRET)
+    req.user = user
+    next()
+  } catch (error) {
+    // Invalid token, continue as guest
+    req.user = null
+    next()
+  }
+}
+
 export const isAdmin = async (req, res, next) => {
   try {
     const { query } = await import('../config/database.js')

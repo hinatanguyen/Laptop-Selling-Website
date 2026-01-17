@@ -41,6 +41,30 @@ export const useCartStore = create(
       
       clearCart: () => set({ items: [] }),
       
+      // Remove invalid items from cart
+      validateItems: async () => {
+        const items = get().items
+        const validItems = []
+        
+        for (const item of items) {
+          try {
+            // Check if product still exists
+            const response = await fetch(`/api/products/${item.id}`)
+            if (response.ok) {
+              validItems.push(item)
+            } else {
+              console.log(`Removed invalid product from cart: ${item.name}`)
+            }
+          } catch (error) {
+            console.log(`Removed invalid product from cart: ${item.name}`)
+          }
+        }
+        
+        if (validItems.length !== items.length) {
+          set({ items: validItems })
+        }
+      },
+      
       getTotal: () => {
         return get().items.reduce(
           (total, item) => total + item.price * item.quantity,

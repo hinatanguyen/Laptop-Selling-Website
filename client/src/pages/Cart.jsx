@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext'
 
 export default function Cart() {
   const { t } = useLanguage()
-  const { items, removeItem, updateQuantity, getTotal } = useCartStore()
+  const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore()
 
   if (items.length === 0) {
     return (
@@ -32,7 +32,19 @@ export default function Cart() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t({ en: 'Shopping Cart', vi: 'Giỏ Hàng' })}</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Shopping Cart', vi: 'Giỏ Hàng' })}</h1>
+        <button
+          onClick={() => {
+            if (window.confirm('Are you sure you want to clear your cart?')) {
+              clearCart()
+            }
+          }}
+          className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm"
+        >
+          Clear Cart
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}

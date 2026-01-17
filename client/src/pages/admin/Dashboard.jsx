@@ -155,10 +155,24 @@ export default function AdminDashboard() {
               {recentOrders.map((order) => (
                 <tr key={order.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    #{order.id}
+                    <Link 
+                      to={`/admin/orders/${order.id}`} 
+                      className="text-primary-600 hover:text-primary-800 font-medium"
+                    >
+                      #{order.id}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {order.full_name}
+                    <div>
+                      <p className="font-medium">{order.full_name}</p>
+                      <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                        order.customer_type === 'Guest' 
+                          ? 'bg-orange-100 text-orange-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {order.customer_type}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${parseFloat(order.total_amount).toFixed(2)}

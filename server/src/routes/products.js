@@ -2,6 +2,7 @@ import express from 'express'
 import {
   getAllProducts,
   getProductById,
+  getProductBySlug,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -14,6 +15,7 @@ const router = express.Router()
 // Public routes
 router.get('/', getAllProducts)
 router.get('/search', searchProducts)
+router.get('/slug/:slug', getProductBySlug)
 router.get('/:id', getProductById)
 
 // Admin routes

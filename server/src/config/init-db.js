@@ -40,6 +40,7 @@ const initDatabase = async () => {
         price DECIMAL(10, 2) NOT NULL,
         stock INTEGER NOT NULL DEFAULT 0,
         image_url TEXT,
+        images JSONB,
         specs JSONB,
         description TEXT,
         featured BOOLEAN DEFAULT false,
@@ -77,6 +78,11 @@ const initDatabase = async () => {
     `)
 
     console.log('✅ Database tables created successfully')
+
+    // Ensure columns exist for older databases
+    await client.query(`
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSONB;
+    `)
 
     // Insert sample products
     const sampleProducts = [

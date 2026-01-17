@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
-import { ordersAPI } from '../services/api'
+import { ordersAPI, adminAPI } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import Loading from '../components/Loading'
 import { CheckCircleIcon, TruckIcon, ClockIcon } from '@heroicons/react/24/outline'
 
@@ -23,6 +24,7 @@ const statusColors = {
 export default function OrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { isAdmin } = useAuth()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -32,7 +34,10 @@ export default function OrderDetail() {
 
   const loadOrder = async () => {
     try {
-      const response = await ordersAPI.getOrderById(id)
+      // Use admin API if user is admin, otherwise use regular orders API
+      const response = isAdmin ? 
+        await adminAPI.getOrderById(id) : 
+        await ordersAPI.getById(id)
       setOrder(response.data)
     } catch (error) {
       toast.error('Failed to load order')
@@ -64,7 +69,7 @@ export default function OrderDetail() {
       {/* Header */}
       <div className="mb-8">
         <button
-          onClick={() => navigate('/orders')}
+          onClick={() => navigate(isAdmin ? '/admin/orders' : '/orders')}
           className="text-primary-600 hover:text-primary-700 mb-4"
         >
           ← Back to Orders
@@ -145,10 +150,17 @@ export default function OrderDetail() {
           {order.items?.map((item) => (
             <div key={item.id} className="flex items-center gap-4 pb-4 border-b border-gray-200 last:border-0">
               <img
-                src={item.product_image}
+                src={item.product_image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00MCAyNEMyOC45NTQzIDI0IDIwIDMyLjk1NDMgMjAgNDRDMjAgNTUuMDQ1NyAyOC45NTQzIDY0IDQwIDY0QzUxLjA0NTcgNjQgNjAgNTUuMDQ1NyA2MCA0NEM2MCAzMi45NTQzIDUxLjA0NTcgMjQgNDAgMjRaTTQwIDI3QzQ5LjM4ODkgMjcgNTcgMzQuNjExMSA1NyA0NEM1NyA0OS4wNzI5IDU0LjUwNzEgNTMuNTgzMyA1MC41IDU2LjM3NUw0My42ODc1IDQ5LjU2MjVDNDUuNzE5NyA0Ny41MzAzIDQ1LjcxOTcgNDQuMjE5NyA0My42ODc1IDQyLjE4NzVMMzYuMzEyNSAzNC44MTI1QzM0LjI4MDMgMzIuNzgwMyAzMC45Njk3IDMyLjc4MDMgMjguOTM3NSAzNC44MTI1TDIzLjYyNSA0MC4xMjVDMjMuMjE0MyAzOC4xNzE0IDIzIDM2LjExNDMgMjMgNDRDMjMgMzQuNjExMSAzMC42MTExIDI3IDQwIDI3WiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K'}
                 alt={item.product_name}
-                className="w-20 h-20 object-cover rounded"
+                className="w-20 h-20 object-cover rounded bg-gray-100"
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                  e.target.nextElementSibling.style.display = 'flex'
+                }}
               />
+              <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center hidden">
+                <span className="text-gray-400 text-xs text-center">No Image</span>
+              </div>
               <div className="flex-1">
                 <p className="font-semibold text-gray-900">{item.product_name}</p>
                 <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
@@ -185,11 +197,47 @@ export default function OrderDetail() {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4">Shipping Information</h2>
         <div className="space-y-2 text-gray-600">
-          <p>{order.shipping_address}</p>
-          <p className="font-medium">Payment Method: {order.payment_method}</p>
-          {order.tracking_number && (
-            <p className="font-medium">Tracking Number: {order.tracking_number}</p>
-          )}
+          {/* Customer Information */}
+          <div className="space-y-1 mb-4">
+            <p className="font-medium text-gray-900">Customer Details:</p>
+            <p><span className="font-medium">Name:</span> {order.full_name || order.customer_name || 'N/A'}</p>
+            <p><span className="font-medium">Email:</span> {order.email || order.customer_email || 'N/A'}</p>
+            {(order.phone || order.customer_phone) && (
+              <p><span className="font-medium">Phone:</span> {order.phone || order.customer_phone}</p>
+            )}
+          </div>
+
+          {/* Delivery Address */}
+          {(() => {
+            try {
+              const address = typeof order.shipping_address === 'string' 
+                ? JSON.parse(order.shipping_address) 
+                : order.shipping_address;
+              
+              return (
+                <div className="space-y-1">
+                  <p className="font-medium text-gray-900">Delivery Address:</p>
+                  <p>{address.address}</p>
+                  <p>{address.city}, {address.postal_code}</p>
+                  <p>{address.country}</p>
+                </div>
+              );
+            } catch (e) {
+              return <p>{order.shipping_address}</p>;
+            }
+          })()}
+          <div className="pt-3 mt-3 border-t border-gray-200">
+            <p className="font-medium text-gray-900">Payment Method: 
+              <span className="text-gray-600 font-normal">
+                {order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : order.payment_method}
+              </span>
+            </p>
+            {order.tracking_number && (
+              <p className="font-medium text-gray-900">Tracking Number: 
+                <span className="text-gray-600 font-normal">{order.tracking_number}</span>
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

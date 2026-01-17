@@ -1,5 +1,6 @@
 import pkg from 'pg'
 const { Pool } = pkg
+import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -56,6 +57,7 @@ const seedDatabase = async () => {
         price DECIMAL(10, 2) NOT NULL,
         stock INTEGER DEFAULT 0,
         image_url TEXT,
+        images JSONB,
         specs JSONB,
         description TEXT,
         featured BOOLEAN DEFAULT false,
@@ -65,7 +67,7 @@ const seedDatabase = async () => {
     `)
     console.log('✅ Created products table')
 
-    // Create orders table
+    // Create orders table (supports guest checkout)
     await pool.query(`
       CREATE TABLE orders (
         id SERIAL PRIMARY KEY,
@@ -74,6 +76,9 @@ const seedDatabase = async () => {
         status VARCHAR(50) DEFAULT 'pending',
         payment_method VARCHAR(50),
         shipping_address TEXT,
+        customer_email VARCHAR(255),
+        customer_name VARCHAR(255),
+        customer_phone VARCHAR(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -94,12 +99,16 @@ const seedDatabase = async () => {
     `)
     console.log('✅ Created order_items table')
 
-    // Insert sample users (password: 'admin123' hashed)
+    // Hash passwords
+    const adminPassword = await bcrypt.hash('admin123', 10)
+    const customerPassword = await bcrypt.hash('admin123', 10)
+
+    // Insert sample users
     await pool.query(`
       INSERT INTO users (email, password_hash, full_name, phone, role) VALUES
-      ('admin@laptopstore.com', '$2b$10$XQZ9Q7K9K7K9K7K9K7K9K.K7K9K7K9K7K9K7K9K7K9K7K9K7K9K', 'Admin User', '123-456-7890', 'admin'),
-      ('customer@example.com', '$2b$10$XQZ9Q7K9K7K9K7K9K7K9K.K7K9K7K9K7K9K7K9K7K9K7K9K7K9K', 'John Doe', '098-765-4321', 'customer')
-    `)
+      ($1, $2, 'Admin User', '123-456-7890', 'admin'),
+      ($3, $4, 'John Doe', '098-765-4321', 'customer')
+    `, ['admin@laptopstore.com', adminPassword, 'customer@example.com', customerPassword])
     console.log('✅ Inserted sample users')
 
     // Insert sample products
@@ -255,6 +264,140 @@ const seedDatabase = async () => {
         }),
         description: 'Premium gaming laptop with sleek design',
         featured: true
+      },
+      // Additional products
+      {
+        name: 'Dell XPS 15',
+        brand: 'Dell',
+        category: 'Professional',
+        processor: 'Intel Core i7-12700H',
+        price: 1799.99,
+        stock: 14,
+        image_url: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500',
+        specs: JSON.stringify({
+          screen: '15.6" 4K OLED',
+          ram: '32GB DDR5',
+          storage: '1TB SSD',
+          graphics: 'NVIDIA RTX 3050 Ti',
+          battery: '86WHr',
+          weight: '4.22 lbs'
+        }),
+        description: 'High-end content creation laptop',
+        featured: false
+      },
+      {
+        name: 'MacBook Air M2',
+        brand: 'Apple',
+        category: 'Ultrabook',
+        processor: 'Apple M2',
+        price: 1199.99,
+        stock: 25,
+        image_url: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500',
+        specs: JSON.stringify({
+          screen: '13.6" Liquid Retina',
+          ram: '8GB Unified Memory',
+          storage: '256GB SSD',
+          graphics: 'Apple M2 GPU',
+          battery: '52.6WHr',
+          weight: '2.7 lbs'
+        }),
+        description: 'Ultra-thin laptop with M2 chip',
+        featured: true
+      },
+      {
+        name: 'ASUS ZenBook 14',
+        brand: 'ASUS',
+        category: 'Ultrabook',
+        processor: 'AMD Ryzen 7 5800H',
+        price: 899.99,
+        stock: 22,
+        image_url: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500',
+        specs: JSON.stringify({
+          screen: '14" FHD',
+          ram: '16GB DDR4',
+          storage: '512GB SSD',
+          graphics: 'AMD Radeon Graphics',
+          battery: '63WHr',
+          weight: '2.87 lbs'
+        }),
+        description: 'Affordable ultrabook with AMD power',
+        featured: false
+      },
+      {
+        name: 'HP Pavilion Gaming 15',
+        brand: 'HP',
+        category: 'Gaming',
+        processor: 'Intel Core i5-12500H',
+        price: 999.99,
+        stock: 16,
+        image_url: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=500',
+        specs: JSON.stringify({
+          screen: '15.6" FHD 144Hz',
+          ram: '8GB DDR4',
+          storage: '512GB SSD',
+          graphics: 'NVIDIA GTX 1650',
+          battery: '52.5WHr',
+          weight: '5.08 lbs'
+        }),
+        description: 'Budget-friendly gaming laptop',
+        featured: false
+      },
+      {
+        name: 'Lenovo Legion 5 Pro',
+        brand: 'Lenovo',
+        category: 'Gaming',
+        processor: 'AMD Ryzen 7 5800H',
+        price: 1399.99,
+        stock: 11,
+        image_url: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=500',
+        specs: JSON.stringify({
+          screen: '16" QHD 165Hz',
+          ram: '16GB DDR4',
+          storage: '512GB SSD',
+          graphics: 'NVIDIA RTX 3060',
+          battery: '80WHr',
+          weight: '5.4 lbs'
+        }),
+        description: 'Powerful gaming laptop with large screen',
+        featured: false
+      },
+      {
+        name: 'Surface Pro 9',
+        brand: 'Microsoft',
+        category: '2-in-1',
+        processor: 'Intel Core i7-1255U',
+        price: 1599.99,
+        stock: 13,
+        image_url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500',
+        specs: JSON.stringify({
+          screen: '13" PixelSense Flow',
+          ram: '16GB LPDDR5',
+          storage: '256GB SSD',
+          graphics: 'Intel Iris Xe',
+          battery: '47.36WHr',
+          weight: '1.94 lbs'
+        }),
+        description: '2-in-1 tablet laptop hybrid',
+        featured: true
+      },
+      {
+        name: 'Alienware x14',
+        brand: 'Dell',
+        category: 'Gaming',
+        processor: 'Intel Core i7-12700H',
+        price: 2199.99,
+        stock: 7,
+        image_url: 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=500',
+        specs: JSON.stringify({
+          screen: '14" FHD 144Hz',
+          ram: '16GB DDR5',
+          storage: '512GB SSD',
+          graphics: 'NVIDIA RTX 3060',
+          battery: '87WHr',
+          weight: '4.06 lbs'
+        }),
+        description: 'Compact gaming powerhouse',
+        featured: false
       }
     ]
 

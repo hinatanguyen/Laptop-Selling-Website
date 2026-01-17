@@ -31,6 +31,7 @@ api.interceptors.response.use(
 export const productsAPI = {
   getAll: (params) => api.get('/products', { params }),
   getById: (id) => api.get(`/products/${id}`),
+  getBySlug: (slug) => api.get(`/products/slug/${slug}`),
   create: (data) => api.post('/products', data),
   update: (id, data) => api.put(`/products/${id}`, data),
   delete: (id) => api.delete(`/products/${id}`),
@@ -48,11 +49,15 @@ export const cartAPI = {
 
 // Orders API
 export const ordersAPI = {
+  createOrder: (data) => api.post('/orders', data),
   create: (data) => api.post('/orders', data),
   getAll: () => api.get('/orders'),
+  // Alias used by client pages
+  getUserOrders: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, status) => api.patch(`/orders/${id}/status`, { status }),
-  cancel: (id) => api.post(`/orders/${id}/cancel`)
+  // Match server route: PATCH /orders/:id/cancel
+  cancelOrder: (id) => api.patch(`/orders/${id}/cancel`)
 }
 
 // Auth API
@@ -78,9 +83,9 @@ export const authService = {
 // Admin API
 export const adminAPI = {
   getDashboardStats: () => api.get('/admin/dashboard'),
-  getStats: () => api.get('/admin/stats'),
   getOrders: (params) => api.get('/admin/orders', { params }),
-  updateOrder: (id, data) => api.put(`/admin/orders/${id}`, data),
+  getOrderById: (id) => api.get(`/admin/orders/${id}`),
+  updateOrderStatus: (id, status) => api.patch(`/admin/orders/${id}/status`, { status }),
   // Product management (uses /api/products endpoints with admin auth)
   getProducts: (params) => api.get('/products', { params }),
   createProduct: (data) => api.post('/products', data),
@@ -88,6 +93,11 @@ export const adminAPI = {
   deleteProduct: (id) => api.delete(`/products/${id}`),
   // User management
   getUsers: () => api.get('/admin/users')
+}
+
+// Shop Reviews API (public)
+export const reviewsAPI = {
+  getAll: (params) => api.get('/reviews', { params })
 }
 
 export default api

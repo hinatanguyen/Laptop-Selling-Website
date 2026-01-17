@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { adminAPI } from '../../services/api'
 import Loading from '../../components/Loading'
 import { useLanguage } from '../../context/LanguageContext'
+import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { UserIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 
 export default function AdminUsers() {
   const { t } = useLanguage()
+  const navigate = useNavigate()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -37,9 +40,18 @@ export default function AdminUsers() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4 mb-8">
+        <button
+          onClick={() => navigate('/admin')}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+          <span className="font-medium">{t({ en: 'Back to Dashboard', vi: 'Về Bảng Điều Khiển' })}</span>
+        </button>
+        <div className="h-6 w-px bg-gray-300"></div>
         <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Manage Users', vi: 'Quản Lý Người Dùng' })}</h1>
-        <div className="text-sm text-gray-600">
+        <div className="ml-auto text-sm text-gray-600">
           {t({ en: 'Total Users:', vi: 'Tổng Số Người Dùng:' })} <span className="font-semibold">{users.length}</span>
         </div>
       </div>

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom'
 import { adminAPI, productsAPI } from '../../services/api'
 import axios from 'axios'
 import Loading from '../../components/Loading'
 import { useLanguage } from '../../context/LanguageContext'
-import { PencilIcon, TrashIcon, PlusIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { PencilIcon, TrashIcon, PlusIcon, PhotoIcon, XMarkIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 
 export default function AdminProducts() {
   const { t } = useLanguage()
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -27,7 +29,19 @@ export default function AdminProducts() {
     stock: '',
     images: [],
     description: '',
-    featured: false
+    featured: false,
+    specs: {
+      ram: '',
+      storage: '',
+      display: '',
+      graphics: '',
+      battery: '',
+      weight: '',
+      dimensions: '',
+      operatingSystem: '',
+      ports: '',
+      wireless: ''
+    }
   })
 
   useEffect(() => {
@@ -68,7 +82,8 @@ export default function AdminProducts() {
         images: formData.images, // Send as array
         image: formData.images[0], // First image for backward compatibility
         description: formData.description,
-        featured: formData.featured
+        featured: formData.featured,
+        specs: formData.specs
       }
 
       if (editingProduct) {
@@ -168,7 +183,19 @@ export default function AdminProducts() {
       stock: '',
       images: [],
       description: '',
-      featured: false
+      featured: false,
+      specs: {
+        ram: '',
+        storage: '',
+        display: '',
+        graphics: '',
+        battery: '',
+        weight: '',
+        dimensions: '',
+        operatingSystem: '',
+        ports: '',
+        wireless: ''
+      }
     })
     setEditingProduct(null)
   }
@@ -184,7 +211,19 @@ export default function AdminProducts() {
       stock: product.stock,
       images: product.images || (product.image_url ? [product.image_url] : []),
       description: product.description,
-      featured: product.featured
+      featured: product.featured,
+      specs: product.specs || {
+        ram: '',
+        storage: '',
+        display: '',
+        graphics: '',
+        battery: '',
+        weight: '',
+        dimensions: '',
+        operatingSystem: '',
+        ports: '',
+        wireless: ''
+      }
     })
     setShowModal(true)
   }
@@ -193,8 +232,17 @@ export default function AdminProducts() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4 mb-8">
+        <button
+          onClick={() => navigate('/admin')}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+          <span className="font-medium">{t({ en: 'Back to Dashboard', vi: 'Về Bảng Điều Khiển' })}</span>
+        </button>
+        <div className="h-6 w-px bg-gray-300"></div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Manage Products', vi: 'Quản Lý Sản Phẩm' })}</h1>
           <p className="text-gray-600 mt-1">{t({ en: 'Total:', vi: 'Tổng cộng:' })} {totalProducts} {t({ en: 'products', vi: 'sản phẩm' })}</p>
         </div>
@@ -346,79 +394,295 @@ export default function AdminProducts() {
       {/* Product Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {editingProduct ? t({ en: 'Edit Product', vi: 'Chỉnh Sửa Sản Phẩm' }) : t({ en: 'Add New Product', vi: 'Thêm Sản Phẩm Mới' })}
-            </h2>
+          <div className="bg-white rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {editingProduct ? t({ en: 'Edit Product', vi: 'Chỉnh Sửa Sản Phẩm' }) : t({ en: 'Add New Product', vi: 'Thêm Sản Phẩm Mới' })}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowModal(false)
+                  resetForm()
+                }}
+                className="text-gray-400 hover:text-gray-600 p-2"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Name *', vi: 'Tên *' })}</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Basic Information Section */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {t({ en: 'Basic Information', vi: 'Thông Tin Cơ Bản' })}
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Product Name *', vi: 'Tên Sản Phẩm *' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'Enter product name', vi: 'Nhập tên sản phẩm' })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Brand *', vi: 'Thương Hiệu *' })}
+                    </label>
+                    <select
+                      value={formData.brand}
+                      onChange={(e) => setFormData({...formData, brand: e.target.value})}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="">{t({ en: 'Select Brand', vi: 'Chọn Thương Hiệu' })}</option>
+                      <option value="Dell">Dell</option>
+                      <option value="HP">HP</option>
+                      <option value="ASUS">ASUS</option>
+                      <option value="Lenovo">Lenovo</option>
+                      <option value="Acer">Acer</option>
+                      <option value="Apple">Apple</option>
+                      <option value="MSI">MSI</option>
+                      <option value="Samsung">Samsung</option>
+                      <option value="LG">LG</option>
+                      <option value="Other">{t({ en: 'Other', vi: 'Khác' })}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Category *', vi: 'Danh Mục *' })}
+                    </label>
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData({...formData, category: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="Laptop">Laptop</option>
+                      <option value="Gaming Laptop">Gaming Laptop</option>
+                      <option value="Business Laptop">Business Laptop</option>
+                      <option value="Ultrabook">Ultrabook</option>
+                      <option value="2-in-1 Laptop">2-in-1 Laptop</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Processor', vi: 'Bộ Xử Lý' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.processor}
+                      onChange={(e) => setFormData({...formData, processor: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., Intel Core i7-12700H', vi: 'VD: Intel Core i7-12700H' })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Price *', vi: 'Giá *' })}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: e.target.value})}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Stock *', vi: 'Tồn Kho *' })}
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.stock}
+                      onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Brand *', vi: 'Thương Hiệu *' })}</label>
-                  <input
-                    type="text"
-                    value={formData.brand}
-                    onChange={(e) => setFormData({...formData, brand: e.target.value})}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
+              {/* Technical Specifications Section */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {t({ en: 'Technical Specifications', vi: 'Thông Số Kỹ Thuật' })}
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'RAM', vi: 'RAM' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.ram}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, ram: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., 16GB DDR5', vi: 'VD: 16GB DDR5' })}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Category *', vi: 'Danh Mục *' })}</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="Laptop">Laptop</option>
-                    <option value="Desktop">Desktop</option>
-                    <option value="Accessories">{t({ en: 'Accessories', vi: 'Phụ Kiện' })}</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Storage', vi: 'Bộ Nhớ' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.storage}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, storage: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., 512GB SSD', vi: 'VD: 512GB SSD' })}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Processor', vi: 'Bộ Xử Lý' })}</label>
-                  <input
-                    type="text"
-                    value={formData.processor}
-                    onChange={(e) => setFormData({...formData, processor: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Display', vi: 'Màn Hình' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.display}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, display: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., 15.6" FHD (1920x1080)', vi: 'VD: 15.6" FHD (1920x1080)' })}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Price *', vi: 'Giá *' })}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Graphics', vi: 'Card Đồ Họa' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.graphics}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, graphics: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., NVIDIA RTX 3060', vi: 'VD: NVIDIA RTX 3060' })}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Stock *', vi: 'Tồn Kho *' })}</label>
-                  <input
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Battery', vi: 'Pin' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.battery}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, battery: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., 70Wh, Up to 10 hours', vi: 'VD: 70Wh, Tối đa 10 giờ' })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Weight', vi: 'Trọng Lượng' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.weight}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, weight: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., 1.8kg', vi: 'VD: 1.8kg' })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Dimensions', vi: 'Kích Thước' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.dimensions}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, dimensions: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., 356 x 230 x 18mm', vi: 'VD: 356 x 230 x 18mm' })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Operating System', vi: 'Hệ Điều Hành' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.operatingSystem}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, operatingSystem: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., Windows 11 Home', vi: 'VD: Windows 11 Home' })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Ports', vi: 'Cổng Kết Nối' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.ports}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, ports: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., 2x USB-A, 2x USB-C, HDMI, Audio', vi: 'VD: 2x USB-A, 2x USB-C, HDMI, Audio' })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t({ en: 'Wireless', vi: 'Kết Nối Không Dây' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specs.wireless}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specs: {...formData.specs, wireless: e.target.value}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder={t({ en: 'e.g., Wi-Fi 6, Bluetooth 5.2', vi: 'VD: Wi-Fi 6, Bluetooth 5.2' })}
+                    />
+                  </div>
                 </div>
               </div>
 

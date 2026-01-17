@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { productsAPI } from '../services/api'
+import { productsAPI, reviewsAPI } from '../services/api'
 import { useCartStore } from '../context/CartContext'
 import Loading from '../components/Loading'
 import ProductCard from '../components/ProductCard'
 import toast from 'react-hot-toast'
 import { useLanguage } from '../context/LanguageContext'
-import { ShoppingCartIcon, HeartIcon, ShareIcon } from '@heroicons/react/24/outline'
+import { ShoppingCartIcon, HeartIcon, ShareIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export default function ProductDetail() {
   const { t } = useLanguage()
-  const { id } = useParams()
+  const { slug } = useParams()
   const navigate = useNavigate()
   const [product, setProduct] = useState(null)
   const [quantity, setQuantity] = useState(1)
@@ -18,24 +18,45 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true)
   const [relatedProducts, setRelatedProducts] = useState([])
   const [relatedLoading, setRelatedLoading] = useState(false)
+  const [isSpecModalOpen, setIsSpecModalOpen] = useState(false)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [shopReviews, setShopReviews] = useState([])
+  const [reviewsMeta, setReviewsMeta] = useState({ page: 1, pages: 1, total: 0 })
   const addItem = useCartStore((state) => state.addItem)
 
   useEffect(() => {
     loadProduct()
-  }, [id])
+  }, [slug])
 
   const loadProduct = async () => {
     try {
-      const { data } = await productsAPI.getById(id)
+      const { data } = await productsAPI.getBySlug(slug)
       setProduct(data)
       // Load related products after getting the main product
       loadRelatedProducts(data)
+      // Load shop reviews initial page
+      loadReviews(1)
     } catch (error) {
       console.error('Failed to load product:', error)
       toast.error(t({ en: 'Product not found', vi: 'Không tìm thấy sản phẩm' }))
       navigate('/products')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadReviews = async (page = 1) => {
+    try {
+      const { data } = await reviewsAPI.getAll({ page, limit: 3 })
+      if (page === 1) {
+        setShopReviews(data.reviews || [])
+      } else {
+        setShopReviews((prev) => [...prev, ...(data.reviews || [])])
+      }
+      setReviewsMeta({ page: data.pagination.page, pages: data.pagination.pages, total: data.pagination.total, rating: data.rating })
+    } catch (e) {
+      console.error('Failed to load reviews', e)
     }
   }
 
@@ -109,14 +130,19 @@ export default function ProductDetail() {
     const specTranslations = {
       'ram': t({ en: 'Ram', vi: 'Ram' }),
       'screen': t({ en: 'Screen', vi: 'Màn Hình' }),
+      'display': t({ en: 'Screen', vi: 'Màn Hình' }),
       'weight': t({ en: 'Weight', vi: 'Khối Lượng' }),
       'battery': t({ en: 'Battery', vi: 'Pin' }),
       'storage': t({ en: 'Storage', vi: 'Dung Lượng' }),
       'graphics': t({ en: 'Graphics', vi: 'Card Đồ Họa' }),
-      'processor': t({ en: 'Processor', vi: 'Bộ Xử Lý' })
+      'processor': t({ en: 'Processor', vi: 'Bộ Xử Lý' }),
+      'dimensions': t({ en: 'Dimensions', vi: 'Kích Thước' }),
+      'operatingsystem': t({ en: 'Operating System', vi: 'Hệ Điều Hành' }),
+      'ports': t({ en: 'Ports', vi: 'Cổng Kết Nối' }),
+      'wireless': t({ en: 'Wireless', vi: 'Kết Nối Không Dây' })
     }
     
-    const normalizedKey = key.toLowerCase().replace(/[_\s]+/g, ' ').trim()
+    const normalizedKey = key.toLowerCase().replace(/[_\s]+/g, '').trim()
     return specTranslations[normalizedKey] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
@@ -130,6 +156,35 @@ export default function ProductDetail() {
       ? [product.image_url] 
       : ['https://via.placeholder.com/800x600?text=No+Image']
 
+  // Normalize specs into a consistent object for the modal table
+  const normalizedSpecs = (() => {
+    const normalizeKey = (k) => k?.toString().toLowerCase().replace(/[_\s]+/g, '').trim()
+    const mapCanonical = (norm) => {
+      if (norm === 'screen' || norm === 'display') return 'display'
+      if (norm === 'operatingsystem') return 'operatingSystem'
+      return norm
+    }
+
+    let specsObj = {}
+    if (product.specs && typeof product.specs === 'object') {
+      Object.entries(product.specs).forEach(([k, v]) => {
+        const canon = mapCanonical(normalizeKey(k))
+        specsObj[canon] = v
+      })
+    } else if (product.specs && typeof product.specs === 'string') {
+      product.specs.split(',').forEach((pair) => {
+        const [k, v] = pair.split(':')
+        if (k) {
+          const canon = mapCanonical(normalizeKey(k))
+          specsObj[canon] = (v || '').trim()
+        }
+      })
+    }
+    return specsObj
+  })()
+
+  const SPEC_ORDER = ['ram','storage','display','graphics','battery','weight','dimensions','operatingSystem','ports','wireless']
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
@@ -142,30 +197,33 @@ export default function ProductDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Product Image Gallery */}
         <div>
-          {/* Main Image */}
-          <div className="card overflow-hidden mb-4">
+          {/* Main Image (fixed aspect ratio) */}
+          <div className="card overflow-hidden mb-4 aspect-[4/3] bg-gray-50 flex items-center justify-center">
             <img
               src={productImages[selectedImageIndex]}
               alt={product.name}
-              className="w-full h-auto"
+              className="w-full h-full object-cover cursor-zoom-in"
+              onClick={() => { setIsLightboxOpen(true); setLightboxIndex(selectedImageIndex) }}
             />
           </div>
           
           {/* Thumbnail Gallery */}
           {productImages.length > 1 && (
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
               {productImages.map((img, index) => (
-                <div
+                <button
+                  type="button"
                   key={index}
                   onClick={() => setSelectedImageIndex(index)}
-                  className={`card overflow-hidden cursor-pointer transition ${
+                  className={`card overflow-hidden cursor-pointer transition aspect-square ${
                     selectedImageIndex === index
                       ? 'ring-2 ring-primary-600'
-                      : 'opacity-60 hover:opacity-100'
+                      : 'opacity-70 hover:opacity-100'
                   }`}
+                  aria-label={`Select image ${index + 1}`}
                 >
-                  <img src={img} alt={`${product.name} ${index + 1}`} className="w-full h-auto" />
-                </div>
+                  <img src={img} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
+                </button>
               ))}
             </div>
           )}
@@ -224,32 +282,132 @@ export default function ProductDetail() {
           <div className="mb-6">
             <h3 className="font-semibold mb-2">{t({ en: 'Specifications', vi: 'Thông Số Kỹ Thuật' })}</h3>
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+              {/* Primary specs list */}
               <div className="flex justify-between">
                 <span className="text-gray-600">{t({ en: 'Processor', vi: 'Bộ Xử Lý' })}</span>
-                <span className="font-semibold">{product.processor}</span>
+                <span className="font-semibold text-right">{product.processor}</span>
               </div>
               {product.specs && typeof product.specs === 'object' ? (
-                // Handle specs as object (JSONB from database)
-                Object.entries(product.specs).map(([key, value]) => (
-                  <div key={key} className="flex justify-between">
-                    <span className="text-gray-600 capitalize">{translateSpecKey(key)}</span>
-                    <span className="font-semibold">{value}</span>
-                  </div>
-                ))
+                Object.entries(product.specs)
+                  .filter(([key, value]) => value && String(value).trim() !== '')
+                  .filter(([key]) => ['ram','storage','display','screen','graphics','weight','battery'].includes(key.toLowerCase()))
+                  .map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <span className="text-gray-600 capitalize">{translateSpecKey(key)}</span>
+                      <span className="font-semibold text-right">{value}</span>
+                    </div>
+                  ))
               ) : product.specs && typeof product.specs === 'string' ? (
-                // Handle specs as comma-separated string
                 product.specs.split(',').map((spec, i) => {
                   const [key, value] = spec.trim().split(':')
                   return (
                     <div key={i} className="flex justify-between">
                       <span className="text-gray-600">{translateSpecKey(key)}</span>
-                      <span className="font-semibold">{value || spec}</span>
+                      <span className="font-semibold text-right">{value || spec}</span>
                     </div>
                   )
                 })
               ) : null}
+
+              {/* Bottom toggle opens modal */}
+              {product.specs && (
+                <div className="pt-3 flex justify-end">
+                  <button
+                    onClick={() => setIsSpecModalOpen(true)}
+                    className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1"
+                  >
+                    {t({ en: 'Show Detail Spec', vi: 'Xem Chi Tiết' })}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Specs Modal */}
+          {isSpecModalOpen && (
+            <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => setIsSpecModalOpen(false)}>
+              <div className="bg-white rounded-lg max-w-2xl w-full p-6" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">{t({ en: 'Detailed Specifications', vi: 'Chi Tiết Thông Số' })}</h3>
+                  <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsSpecModalOpen(false)} aria-label="Close">
+                    <XMarkIcon className="w-6 h-6" />
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border border-gray-200 rounded-lg">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="text-left text-gray-700 font-medium px-4 py-2 w-1/2">{t({ en: 'Specification', vi: 'Thông Số' })}</th>
+                        <th className="text-right text-gray-700 font-medium px-4 py-2 w-1/2">{t({ en: 'Detail', vi: 'Chi Tiết' })}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="odd:bg-white even:bg-gray-50 border-t">
+                        <td className="text-gray-600 px-4 py-2">{t({ en: 'Processor', vi: 'Bộ Xử Lý' })}</td>
+                        <td className="font-semibold text-right px-4 py-2">{product.processor}</td>
+                      </tr>
+                      {SPEC_ORDER.map((key) => (
+                        <tr key={key} className="odd:bg-white even:bg-gray-50 border-t">
+                          <td className="text-gray-600 px-4 py-2">{translateSpecKey(key)}</td>
+                          <td className="font-semibold text-right px-4 py-2">{normalizedSpecs[key] && String(normalizedSpecs[key]).trim() !== '' ? normalizedSpecs[key] : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Image Lightbox */}
+          {isLightboxOpen && (
+            <div
+              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center select-none"
+              onClick={() => setIsLightboxOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setIsLightboxOpen(false)
+                if (e.key === 'ArrowRight') setLightboxIndex((i) => (i + 1) % productImages.length)
+                if (e.key === 'ArrowLeft') setLightboxIndex((i) => (i - 1 + productImages.length) % productImages.length)
+              }}
+              tabIndex={-1}
+            >
+              <button
+                className="absolute top-6 right-6 text-white/80 hover:text-white"
+                onClick={() => setIsLightboxOpen(false)}
+                aria-label="Close"
+              >
+                <XMarkIcon className="w-8 h-8" />
+              </button>
+              <button
+                className="absolute left-4 md:left-8 text-white/80 hover:text-white text-3xl"
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex((i) => (i - 1 + productImages.length) % productImages.length) }}
+                aria-label="Previous image"
+              >
+                ‹
+              </button>
+              <img
+                src={productImages[lightboxIndex]}
+                alt={`${product.name} large`}
+                className="max-h-[85vh] max-w-[90vw] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                className="absolute right-4 md:right-8 text-white/80 hover:text-white text-3xl"
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex((i) => (i + 1) % productImages.length) }}
+                aria-label="Next image"
+              >
+                ›
+              </button>
+            </div>
+          )}
 
           {/* Add to Cart */}
           <div className="flex items-center gap-4 mb-6">
@@ -324,6 +482,70 @@ export default function ProductDetail() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Shop Reviews Section */}
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+          {t({ en: 'Shop Reviews', vi: 'Đánh Giá Cửa Hàng' })}
+          {reviewsMeta?.rating && (
+            <span className="text-sm font-medium text-gray-600">
+              {t({ en: 'Average', vi: 'Trung Bình' })}: {reviewsMeta.rating.average.toFixed(1)} ★ ({reviewsMeta.rating.count})
+            </span>
+          )}
+        </h2>
+
+        <div className="space-y-4">
+          {shopReviews.map((r) => (
+            <ReviewItem key={r.id} review={r} />
+          ))}
+        </div>
+
+        {reviewsMeta.page < reviewsMeta.pages && (
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => loadReviews(reviewsMeta.page + 1)}
+              className="btn-secondary"
+            >
+              {t({ en: 'Load more reviews', vi: 'Xem thêm đánh giá' })}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ReviewItem({ review }) {
+  const [expanded, setExpanded] = useState(false)
+  const maxChars = 220
+  const isLong = (review.content || '').length > maxChars
+  const displayText = expanded || !isLong ? review.content : `${review.content.slice(0, maxChars)}…`
+
+  return (
+    <div className="card p-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-primary-600/10 flex items-center justify-center text-primary-700 font-bold">
+            {review.author?.[0] || 'U'}
+          </div>
+          <div>
+            <p className="font-semibold">{review.author || 'User'}</p>
+            <p className="text-xs text-gray-500">{new Date(review.date).toLocaleDateString()}</p>
+          </div>
+        </div>
+        <div className="text-yellow-400">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
+      </div>
+      <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+        {displayText}
+      </p>
+      {isLong && (
+        <button
+          className="mt-2 text-primary-600 hover:text-primary-700 text-sm font-medium"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? 'Show less' : 'Read more'}
+        </button>
       )}
     </div>
   )

@@ -23,9 +23,19 @@ function ProductCard({ product }) {
     ? product.images[0]
     : product.image_url || product.image || 'https://via.placeholder.com/400x300?text=No+Image'
 
+  const slugify = (str) =>
+    str
+      ?.toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      || ''
+
   return (
     <Link 
-      to={`/products/${product.id}`}
+      to={`/products/${slugify(product.name)}`}
       className="card overflow-hidden group cursor-pointer"
     >
       <div className="relative overflow-hidden bg-gray-100 aspect-[4/3]">

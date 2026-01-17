@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { ordersAPI } from '../services/api'
@@ -21,6 +21,18 @@ export default function Checkout() {
     payment_method: 'credit_card'
   })
 
+  // Update form if user is logged in
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        full_name: user.full_name || prev.full_name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+      }))
+    }
+  }, [user])
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -33,7 +45,12 @@ export default function Checkout() {
     setLoading(true)
 
     try {
-      const shippingAddress = `${formData.address}, ${formData.city}, ${formData.postal_code}, ${formData.country}`
+      const shippingAddress = {
+        address: formData.address,
+        city: formData.city,
+        postal_code: formData.postal_code,
+        country: formData.country
+      }
       
       const orderData = {
         items: items.map(item => ({
@@ -41,21 +58,45 @@ export default function Checkout() {
           quantity: item.quantity
         })),
         shipping_address: shippingAddress,
-        payment_method: formData.payment_method
+        payment_method: formData.payment_method,
+        // Include customer info for guest checkout
+        customer_info: {
+          full_name: formData.full_name,
+          email: formData.email,
+          phone: formData.phone
+        }
       }
 
-      const response = await ordersAPI.createOrder(orderData)
+      const response = await ordersAPI.create(orderData)
       
       toast.success('Order placed successfully!')
       clearCart()
       navigate(`/orders/${response.data.id}`)
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to place order')
+      console.error('Order error:', error)
+      
+      // Handle specific product not found errors
+      if (error.response?.data?.message?.includes('not found')) {
+        toast.error(
+          'Some items in your cart are no longer available. Please refresh and update your cart.',
+          { duration: 6000 }
+        )
+        // Offer to clear cart
+        setTimeout(() => {
+          if (window.confirm('Would you like to clear your cart and start over?')) {
+            clearCart()
+            navigate('/products')
+          }
+        }, 2000)
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to place order')
+      }
     } finally {
       setLoading(false)
     }
   }
 
+  // Redirect if cart is empty
   if (items.length === 0) {
     navigate('/cart')
     return null
@@ -68,7 +109,14 @@ export default function Checkout() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+        {!user && (
+          <p className="text-gray-600 mt-2">
+            Shopping as guest. <span className="text-blue-600">No account required!</span>
+          </p>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Checkout Form */}
@@ -76,7 +124,10 @@ export default function Checkout() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Contact Information */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Contact Information</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Contact Information
+                {!user && <span className="text-sm font-normal text-gray-500 ml-2">(Guest Checkout)</span>}
+              </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

@@ -65,14 +65,36 @@ export const getAllProducts = async (req, res, next) => {
 
     const result = await query(queryText, params)
 
-    // Get total count
+    // Get total count - reuse the same parameters to prevent SQL injection
     let countQuery = 'SELECT COUNT(*) FROM products WHERE 1=1'
-    if (categories) countQuery += ` AND category = ANY(ARRAY[${categories.split(',').map(c => `'${c}'`).join(',')}])`
-    if (brands) countQuery += ` AND brand = ANY(ARRAY[${brands.split(',').map(b => `'${b}'`).join(',')}])`
-    if (maxPrice) countQuery += ` AND price <= ${maxPrice}`
-    if (search) countQuery += ` AND (name ILIKE '%${search}%' OR description ILIKE '%${search}%')`
+    const countParams = []
+    let countParamCount = 0
+    
+    if (categories) {
+      countParamCount++
+      countQuery += ` AND category = ANY($${countParamCount})`
+      countParams.push(categories.split(','))
+    }
 
-    const countResult = await query(countQuery)
+    if (brands) {
+      countParamCount++
+      countQuery += ` AND brand = ANY($${countParamCount})`
+      countParams.push(brands.split(','))
+    }
+
+    if (maxPrice) {
+      countParamCount++
+      countQuery += ` AND price <= $${countParamCount}`
+      countParams.push(maxPrice)
+    }
+
+    if (search) {
+      countParamCount++
+      countQuery += ` AND (name ILIKE $${countParamCount} OR description ILIKE $${countParamCount})`
+      countParams.push(`%${search}%`)
+    }
+
+    const countResult = await query(countQuery, countParams)
     const totalProducts = parseInt(countResult.rows[0].count)
 
     res.json({
@@ -94,6 +116,33 @@ export const getProductById = async (req, res, next) => {
   try {
     const { id } = req.params
     const result = await query('SELECT * FROM products WHERE id = $1', [id])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Product not found' })
+    }
+
+    res.json(result.rows[0])
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Get single product by slug or name
+export const getProductBySlug = async (req, res, next) => {
+  try {
+    const { slug } = req.params
+    if (!slug) return res.status(400).json({ message: 'Slug required' })
+
+    const slugLower = slug.toLowerCase()
+    const nameCandidate = slugLower.replace(/-/g, ' ')
+
+    // Match either exact lower(name) or lower(replace(name,' ','-')) to the provided slug
+    const result = await query(
+      `SELECT * FROM products 
+       WHERE lower(replace(name, ' ', '-')) = $1 OR lower(name) = $2 
+       LIMIT 1`,
+      [slugLower, nameCandidate]
+    )
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Product not found' })
@@ -134,7 +183,7 @@ export const createProduct = async (req, res, next) => {
       `INSERT INTO products (name, brand, category, processor, price, stock, image_url, images, specs, description, featured)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
-      [name, brand, category, processor, price, stock, imageArray[0] || '', JSON.stringify(imageArray), specs, description, featured]
+      [name, brand, category, processor, price, stock, imageArray[0] || null, JSON.stringify(imageArray), JSON.stringify(specs), description, featured]
     )
 
     res.status(201).json(result.rows[0])
@@ -176,7 +225,7 @@ export const updateProduct = async (req, res, next) => {
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $12
        RETURNING *`,
-      [name, brand, category, processor, price, stock, imageArray[0] || '', JSON.stringify(imageArray), specs, description, featured, id]
+      [name, brand, category, processor, price, stock, imageArray[0] || null, JSON.stringify(imageArray), JSON.stringify(specs), description, featured, id]
     )
 
     if (result.rows.length === 0) {
