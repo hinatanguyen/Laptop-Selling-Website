@@ -22,8 +22,6 @@ export default function ProductDetail() {
   const [isSpecModalOpen, setIsSpecModalOpen] = useState(false)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
-  const [shopReviews, setShopReviews] = useState([])
-  const [reviewsMeta, setReviewsMeta] = useState({ page: 1, pages: 1, total: 0 })
   const addItem = useCartStore((state) => state.addItem)
 
   useEffect(() => {
@@ -36,28 +34,12 @@ export default function ProductDetail() {
       setProduct(data)
       // Load related products after getting the main product
       loadRelatedProducts(data)
-      // Load shop reviews initial page
-      loadReviews(1)
     } catch (error) {
       console.error('Failed to load product:', error)
       toast.error(t({ en: 'Product not found', vi: 'Không tìm thấy sản phẩm' }))
       navigate('/products')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadReviews = async (page = 1) => {
-    try {
-      const { data } = await reviewsAPI.getAll({ page, limit: 3 })
-      if (page === 1) {
-        setShopReviews(data.reviews || [])
-      } else {
-        setShopReviews((prev) => [...prev, ...(data.reviews || [])])
-      }
-      setReviewsMeta({ page: data.pagination.page, pages: data.pagination.pages, total: data.pagination.total, rating: data.rating })
-    } catch (e) {
-      console.error('Failed to load reviews', e)
     }
   }
 
@@ -485,69 +467,6 @@ export default function ProductDetail() {
         </div>
       )}
 
-      {/* Shop Reviews Section */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-          {t({ en: 'Shop Reviews', vi: 'Đánh Giá Cửa Hàng' })}
-          {reviewsMeta?.rating && (
-            <span className="text-sm font-medium text-gray-600">
-              {t({ en: 'Average', vi: 'Trung Bình' })}: {reviewsMeta.rating.average.toFixed(1)} ★ ({reviewsMeta.rating.count})
-            </span>
-          )}
-        </h2>
-
-        <div className="space-y-4">
-          {shopReviews.map((r) => (
-            <ReviewItem key={r.id} review={r} />
-          ))}
-        </div>
-
-        {reviewsMeta.page < reviewsMeta.pages && (
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={() => loadReviews(reviewsMeta.page + 1)}
-              className="btn-secondary"
-            >
-              {t({ en: 'Load more reviews', vi: 'Xem thêm đánh giá' })}
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function ReviewItem({ review }) {
-  const [expanded, setExpanded] = useState(false)
-  const maxChars = 220
-  const isLong = (review.content || '').length > maxChars
-  const displayText = expanded || !isLong ? review.content : `${review.content.slice(0, maxChars)}…`
-
-  return (
-    <div className="card p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-primary-600/10 flex items-center justify-center text-primary-700 font-bold">
-            {review.author?.[0] || 'U'}
-          </div>
-          <div>
-            <p className="font-semibold">{review.author || 'User'}</p>
-            <p className="text-xs text-gray-500">{new Date(review.date).toLocaleDateString()}</p>
-          </div>
-        </div>
-        <div className="text-yellow-400">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
-      </div>
-      <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-        {displayText}
-      </p>
-      {isLong && (
-        <button
-          className="mt-2 text-primary-600 hover:text-primary-700 text-sm font-medium"
-          onClick={() => setExpanded((v) => !v)}
-        >
-          {expanded ? 'Show less' : 'Read more'}
-        </button>
-      )}
     </div>
   )
 }
