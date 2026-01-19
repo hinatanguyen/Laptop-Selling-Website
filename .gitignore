@@ -37,3 +37,6 @@ coverage/
 uploads/
 *.pem
 
+# Azure deployment credentials
+azure-credentials.txt
+
