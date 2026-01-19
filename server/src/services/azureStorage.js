@@ -1,4 +1,4 @@
-import { BlobServiceClient } from '@azure/storage-blob'
+import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob'
 import path from 'path'
 
 function getBlobServiceClient() {
@@ -10,8 +10,7 @@ function getBlobServiceClient() {
 
   if (account && key) {
     const url = `https://${account}.blob.core.windows.net`
-    const SharedKeyCredential = (await import('@azure/storage-blob')).StorageSharedKeyCredential
-    const cred = new SharedKeyCredential(account, key)
+    const cred = new StorageSharedKeyCredential(account, key)
     return new BlobServiceClient(url, cred)
   }
 
