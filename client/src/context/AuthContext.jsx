@@ -32,17 +32,16 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const { user, token } = await authService.login(email, password)
+    // Enforce admin-only on client side too
+    if (user?.role !== 'admin') {
+      throw new Error('Admin access only')
+    }
     localStorage.setItem('token', token)
     setUser(user)
     return user
   }
 
-  const register = async (userData) => {
-    const { user, token } = await authService.register(userData)
-    localStorage.setItem('token', token)
-    setUser(user)
-    return user
-  }
+  // Registration disabled
 
   const logout = () => {
     localStorage.removeItem('token')
@@ -55,7 +54,6 @@ export function AuthProvider({ children }) {
     user,
     loading,
     login,
-    register,
     logout,
     isAdmin: user?.role === 'admin'
   }

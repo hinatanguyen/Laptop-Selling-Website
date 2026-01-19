@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast'
 import { ordersAPI } from '../services/api'
 import { useCartStore } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { formatVND } from '../utils/currency'
 
 export default function Checkout() {
   const navigate = useNavigate()
@@ -303,7 +304,7 @@ export default function Checkout() {
                     <p className="text-sm font-medium text-gray-900">{item.name}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                     <p className="text-sm font-bold text-primary-600">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatVND(item.price * item.quantity)}
                     </p>
                   </div>
                 </div>
@@ -313,7 +314,7 @@ export default function Checkout() {
             <div className="space-y-3 border-t border-b border-gray-200 py-4">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{formatVND(subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
@@ -321,13 +322,13 @@ export default function Checkout() {
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Tax (10%)</span>
-                <span>${tax.toFixed(2)}</span>
+                <span>{formatVND(tax)}</span>
               </div>
             </div>
 
             <div className="flex justify-between text-xl font-bold text-gray-900 mt-4">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>{formatVND(total)}</span>
             </div>
 
             <button

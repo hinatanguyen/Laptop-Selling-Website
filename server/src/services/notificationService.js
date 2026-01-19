@@ -78,6 +78,24 @@ class NotificationService {
   getConnectedAdmins() {
     return this.adminSockets.size
   }
+
+  // Notify admins of new contact message
+  notifyNewContact(contactData) {
+    if (!this.io) return
+
+    const notification = {
+      type: 'NEW_CONTACT',
+      message: `New contact from ${contactData.name}: ${contactData.subject}`,
+      data: contactData,
+      timestamp: new Date().toISOString()
+    }
+
+    this.adminSockets.forEach(socket => {
+      socket.emit('new-contact', notification)
+    })
+
+    console.log('📢 New contact notification sent to', this.adminSockets.size, 'admins')
+  }
 }
 
 export default new NotificationService()

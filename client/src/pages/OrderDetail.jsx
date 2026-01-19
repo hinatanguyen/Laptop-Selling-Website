@@ -4,6 +4,8 @@ import { toast } from 'react-hot-toast'
 import { ordersAPI, adminAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import Loading from '../components/Loading'
+import { useLanguage } from '../context/LanguageContext'
+import { formatVND } from '../utils/currency'
 import { CheckCircleIcon, TruckIcon, ClockIcon } from '@heroicons/react/24/outline'
 
 const statusSteps = {
@@ -25,6 +27,7 @@ export default function OrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
+  const { t, language } = useLanguage()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -40,7 +43,7 @@ export default function OrderDetail() {
         await ordersAPI.getById(id)
       setOrder(response.data)
     } catch (error) {
-      toast.error('Failed to load order')
+      toast.error(t({ en: 'Failed to load order', vi: 'Không thể tải đơn hàng' }))
       navigate('/orders')
     } finally {
       setLoading(false)
@@ -48,14 +51,14 @@ export default function OrderDetail() {
   }
 
   const handleCancelOrder = async () => {
-    if (!confirm('Are you sure you want to cancel this order?')) return
+    if (!confirm(t({ en: 'Are you sure you want to cancel this order?', vi: 'Bạn có chắc chắn muốn hủy đơn hàng này?' }))) return
 
     try {
       await ordersAPI.cancelOrder(id)
-      toast.success('Order cancelled successfully')
+      toast.success(t({ en: 'Order cancelled successfully', vi: 'Hủy đơn hàng thành công' }))
       loadOrder()
     } catch (error) {
-      toast.error('Failed to cancel order')
+      toast.error(t({ en: 'Failed to cancel order', vi: 'Không thể hủy đơn hàng' }))
     }
   }
 
@@ -63,6 +66,17 @@ export default function OrderDetail() {
   if (!order) return null
 
   const currentStep = statusSteps[order.status] || 0
+
+  const translateStatus = (status) => {
+    const statusTranslations = {
+      pending: t({ en: 'Pending', vi: 'Đang Chờ' }),
+      processing: t({ en: 'Processing', vi: 'Đang Xử Lý' }),
+      shipped: t({ en: 'Shipped', vi: 'Đã Gửi' }),
+      delivered: t({ en: 'Delivered', vi: 'Đã Giao' }),
+      cancelled: t({ en: 'Cancelled', vi: 'Đã Hủy' })
+    }
+    return statusTranslations[status] || status
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -72,13 +86,13 @@ export default function OrderDetail() {
           onClick={() => navigate(isAdmin ? '/admin/orders' : '/orders')}
           className="text-primary-600 hover:text-primary-700 mb-4"
         >
-          ← Back to Orders
+          ← {t({ en: 'Back to Orders', vi: 'Về Đơn Hàng' })}
         </button>
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Order #{order.id}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Order', vi: 'Đơn hàng' })} #{order.id}</h1>
             <p className="text-gray-600 mt-1">
-              Placed on {new Date(order.created_at).toLocaleDateString('en-US', {
+              {t({ en: 'Placed on', vi: 'Đặt lúc' })} {new Date(order.created_at).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -88,7 +102,7 @@ export default function OrderDetail() {
             </p>
           </div>
           <span className={`px-4 py-2 rounded-full text-sm font-medium ${statusColors[order.status]}`}>
-            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+            {translateStatus(order.status)}
           </span>
         </div>
       </div>
@@ -96,7 +110,7 @@ export default function OrderDetail() {
       {/* Order Progress */}
       {order.status !== 'cancelled' && (
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Order Status</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-6">{t({ en: 'Order Status', vi: 'Trạng thái đơn hàng' })}</h2>
           <div className="relative">
             <div className="flex justify-between">
               {/* Pending */}
@@ -106,7 +120,7 @@ export default function OrderDetail() {
                 }`}>
                   <ClockIcon className="w-6 h-6" />
                 </div>
-                <p className="mt-2 text-sm font-medium text-gray-900">Pending</p>
+                <p className="mt-2 text-sm font-medium text-gray-900">{t({ en: 'Pending', vi: 'Đang Chờ' })}</p>
               </div>
 
               {/* Processing */}
@@ -116,7 +130,7 @@ export default function OrderDetail() {
                 }`}>
                   <CheckCircleIcon className="w-6 h-6" />
                 </div>
-                <p className="mt-2 text-sm font-medium text-gray-900">Processing</p>
+                <p className="mt-2 text-sm font-medium text-gray-900">{t({ en: 'Processing', vi: 'Đang Xử Lý' })}</p>
               </div>
 
               {/* Shipped */}
@@ -126,7 +140,7 @@ export default function OrderDetail() {
                 }`}>
                   <TruckIcon className="w-6 h-6" />
                 </div>
-                <p className="mt-2 text-sm font-medium text-gray-900">Shipped</p>
+                <p className="mt-2 text-sm font-medium text-gray-900">{t({ en: 'Shipped', vi: 'Đã Gửi' })}</p>
               </div>
 
               {/* Delivered */}
@@ -136,7 +150,7 @@ export default function OrderDetail() {
                 }`}>
                   <CheckCircleIcon className="w-6 h-6" />
                 </div>
-                <p className="mt-2 text-sm font-medium text-gray-900">Delivered</p>
+                <p className="mt-2 text-sm font-medium text-gray-900">{t({ en: 'Delivered', vi: 'Đã Giao' })}</p>
               </div>
             </div>
           </div>
@@ -145,7 +159,7 @@ export default function OrderDetail() {
 
       {/* Order Items */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Order Items</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">{t({ en: 'Order Items', vi: 'Sản phẩm trong đơn' })}</h2>
         <div className="space-y-4">
           {order.items?.map((item) => (
             <div key={item.id} className="flex items-center gap-4 pb-4 border-b border-gray-200 last:border-0">
@@ -159,15 +173,15 @@ export default function OrderDetail() {
                 }}
               />
               <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center hidden">
-                <span className="text-gray-400 text-xs text-center">No Image</span>
+                <span className="text-gray-400 text-xs text-center">{t({ en: 'No Image', vi: 'Không có ảnh' })}</span>
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-gray-900">{item.product_name}</p>
-                <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                <p className="text-sm text-gray-600">Price: ${parseFloat(item.price).toFixed(2)}</p>
+                <p className="text-sm text-gray-600">{t({ en: 'Quantity', vi: 'Số lượng' })}: {item.quantity}</p>
+                <p className="text-sm text-gray-600">{t({ en: 'Price', vi: 'Giá' })}: {formatVND(item.price)}</p>
               </div>
               <p className="font-bold text-gray-900">
-                ${parseFloat(item.subtotal).toFixed(2)}
+                {formatVND(item.subtotal)}
               </p>
             </div>
           ))}
@@ -176,34 +190,34 @@ export default function OrderDetail() {
 
       {/* Order Summary */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">{t({ en: 'Order Summary', vi: 'Tóm tắt đơn hàng' })}</h2>
         <div className="space-y-3">
           <div className="flex justify-between text-gray-600">
-            <span>Subtotal</span>
-            <span>${parseFloat(order.total_amount).toFixed(2)}</span>
+            <span>{t({ en: 'Subtotal', vi: 'Tạm tính' })}</span>
+            <span>{formatVND(order.total_amount)}</span>
           </div>
           <div className="flex justify-between text-gray-600">
-            <span>Shipping</span>
-            <span className="text-green-600 font-semibold">Free</span>
+            <span>{t({ en: 'Shipping', vi: 'Vận chuyển' })}</span>
+            <span className="text-green-600 font-semibold">{t({ en: 'Free', vi: 'Miễn phí' })}</span>
           </div>
           <div className="flex justify-between text-xl font-bold text-gray-900 pt-3 border-t border-gray-200">
-            <span>Total</span>
-            <span>${parseFloat(order.total_amount).toFixed(2)}</span>
+            <span>{t({ en: 'Total', vi: 'Tổng cộng' })}</span>
+            <span>{formatVND(order.total_amount)}</span>
           </div>
         </div>
       </div>
 
       {/* Shipping Information */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Shipping Information</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">{t({ en: 'Shipping Information', vi: 'Thông tin vận chuyển' })}</h2>
         <div className="space-y-2 text-gray-600">
           {/* Customer Information */}
           <div className="space-y-1 mb-4">
-            <p className="font-medium text-gray-900">Customer Details:</p>
-            <p><span className="font-medium">Name:</span> {order.full_name || order.customer_name || 'N/A'}</p>
-            <p><span className="font-medium">Email:</span> {order.email || order.customer_email || 'N/A'}</p>
+            <p className="font-medium text-gray-900">{t({ en: 'Customer Details:', vi: 'Thông tin khách hàng:' })}</p>
+            <p><span className="font-medium">{t({ en: 'Name:', vi: 'Tên:' })}</span> {order.full_name || order.customer_name || 'N/A'}</p>
+            <p><span className="font-medium">{t({ en: 'Email:', vi: 'Email:' })}</span> {order.email || order.customer_email || 'N/A'}</p>
             {(order.phone || order.customer_phone) && (
-              <p><span className="font-medium">Phone:</span> {order.phone || order.customer_phone}</p>
+              <p><span className="font-medium">{t({ en: 'Phone:', vi: 'Điện thoại:' })}</span> {order.phone || order.customer_phone}</p>
             )}
           </div>
 
@@ -216,7 +230,7 @@ export default function OrderDetail() {
               
               return (
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-900">Delivery Address:</p>
+                  <p className="font-medium text-gray-900">{t({ en: 'Delivery Address:', vi: 'Địa chỉ giao hàng:' })}</p>
                   <p>{address.address}</p>
                   <p>{address.city}, {address.postal_code}</p>
                   <p>{address.country}</p>
@@ -227,13 +241,13 @@ export default function OrderDetail() {
             }
           })()}
           <div className="pt-3 mt-3 border-t border-gray-200">
-            <p className="font-medium text-gray-900">Payment Method: 
+            <p className="font-medium text-gray-900">{t({ en: 'Payment Method:', vi: 'Phương thức thanh toán:' })} 
               <span className="text-gray-600 font-normal">
-                {order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : order.payment_method}
+                {order.payment_method === 'cash_on_delivery' ? t({ en: 'Cash on Delivery', vi: 'Thanh toán khi nhận hàng' }) : order.payment_method}
               </span>
             </p>
             {order.tracking_number && (
-              <p className="font-medium text-gray-900">Tracking Number: 
+              <p className="font-medium text-gray-900">{t({ en: 'Tracking Number:', vi: 'Mã vận đơn:' })} 
                 <span className="text-gray-600 font-normal">{order.tracking_number}</span>
               </p>
             )}
@@ -248,7 +262,7 @@ export default function OrderDetail() {
             onClick={handleCancelOrder}
             className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition"
           >
-            Cancel Order
+            {t({ en: 'Cancel Order', vi: 'Hủy đơn hàng' })}
           </button>
         </div>
       )}

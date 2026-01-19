@@ -3,11 +3,14 @@ import { io } from 'socket.io-client'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import { notificationSound } from '../utils/notificationSound'
+import { useLanguage } from '../context/LanguageContext'
+import { formatVND } from '../utils/currency'
 
 const useGlobalAdminNotifications = () => {
   const [socket, setSocket] = useState(null)
   const [isConnected, setIsConnected] = useState(false)
   const { user, isAdmin } = useAuth()
+  const { language } = useLanguage()
 
   // Notification sound with fallback
   const playNotificationSound = () => {
@@ -85,7 +88,7 @@ const useGlobalAdminNotifications = () => {
       
       // Show toast notification
       toast.success(
-        `🎉 New Order Received!\nOrder #${notification.data.id}\nCustomer: ${notification.data.customer_name}\nTotal: $${notification.data.total_amount}`,
+        `🎉 New Order Received!\nOrder #${notification.data.id}\nCustomer: ${notification.data.customer_name}\nTotal: ${formatVND(notification.data.total_amount)}`,
         { 
           duration: 6000,
           style: {
@@ -102,7 +105,7 @@ const useGlobalAdminNotifications = () => {
       if ('Notification' in window) {
         if (Notification.permission === 'granted') {
           const browserNotification = new Notification('New Order Received! 🎉', {
-            body: `Order #${notification.data.id} from ${notification.data.customer_name}\nTotal: $${notification.data.total_amount}`,
+            body: `Order #${notification.data.id} from ${notification.data.customer_name}\nTotal: ${formatVND(notification.data.total_amount)}`,
             icon: '/favicon.ico',
             badge: '/favicon.ico',
             tag: 'new-order',
@@ -123,6 +126,15 @@ const useGlobalAdminNotifications = () => {
           }
         }
       }
+    })
+
+    // Listen for new contact messages
+    newSocket.on('new-contact', (notification) => {
+      toast(`📬 New Contact: ${notification.data.subject}\nFrom: ${notification.data.name} <${notification.data.email}>`, {
+        duration: 6000,
+        style: { whiteSpace: 'pre-line' },
+        position: 'top-right'
+      })
     })
 
     // Listen for order status changes

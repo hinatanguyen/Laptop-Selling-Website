@@ -11,7 +11,13 @@
     "test": "NODE_ENV=test jest --watchAll=false",
     "test:watch": "NODE_ENV=test jest --watch",
     "test:coverage": "NODE_ENV=test jest --coverage",
-    "seed": "node src/scripts/seed.js"
+    "seed": "node src/scripts/seed.js",
+    "seed:products": "node src/scripts/seed-products.js",
+    "seed:orders": "node src/scripts/seed-orders.js",
+    "seed:orders:count": "node src/scripts/seed-orders.js 100",
+    "cleanup:nonproduct": "node src/scripts/cleanup-nonproduct.js",
+    "migrate:indexes": "node src/scripts/migrate-indexes.js",
+    "migrate:contact": "node src/scripts/migrate-contact.js"
   },
   "keywords": [
     "ecommerce",
@@ -21,6 +27,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@azure/storage-blob": "^12.16.0",
     "@sendgrid/mail": "^8.1.0",
     "bcrypt": "^5.1.1",
     "compression": "^1.7.4",

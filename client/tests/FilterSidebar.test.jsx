@@ -6,19 +6,21 @@ describe('FilterSidebar Component', () => {
   const mockFilters = {
     categories: [],
     brands: [],
-    maxPrice: 5000
+    priceRange: null
   }
 
   const mockOnFilterChange = jest.fn()
+  const mockOnClearFilters = jest.fn()
 
   beforeEach(() => {
     mockOnFilterChange.mockClear()
+    mockOnClearFilters.mockClear()
   })
 
   it('renders all filter sections', () => {
     render(
       <BrowserRouter>
-        <FilterSidebar filters={mockFilters} onFilterChange={mockOnFilterChange} />
+        <FilterSidebar filters={mockFilters} onFilterChange={mockOnFilterChange} onClearFilters={mockOnClearFilters} />
       </BrowserRouter>
     )
 
@@ -31,7 +33,7 @@ describe('FilterSidebar Component', () => {
   it('handles category selection', () => {
     render(
       <BrowserRouter>
-        <FilterSidebar filters={mockFilters} onFilterChange={mockOnFilterChange} />
+        <FilterSidebar filters={mockFilters} onFilterChange={mockOnFilterChange} onClearFilters={mockOnClearFilters} />
       </BrowserRouter>
     )
 
@@ -47,7 +49,7 @@ describe('FilterSidebar Component', () => {
   it('handles brand selection', () => {
     render(
       <BrowserRouter>
-        <FilterSidebar filters={mockFilters} onFilterChange={mockOnFilterChange} />
+        <FilterSidebar filters={mockFilters} onFilterChange={mockOnFilterChange} onClearFilters={mockOnClearFilters} />
       </BrowserRouter>
     )
 
@@ -67,12 +69,12 @@ describe('FilterSidebar Component', () => {
       </BrowserRouter>
     )
 
-    const priceSlider = screen.getByRole('slider')
-    fireEvent.change(priceSlider, { target: { value: '2000' } })
+    const option = screen.getByLabelText('5M - 10M VND')
+    fireEvent.click(option)
 
     expect(mockOnFilterChange).toHaveBeenCalledWith({
       ...mockFilters,
-      maxPrice: 2000
+      priceRange: { min: 5000000, max: 10000000 }
     })
   })
 
@@ -92,10 +94,6 @@ describe('FilterSidebar Component', () => {
     const clearButton = screen.getByText('Clear All')
     fireEvent.click(clearButton)
 
-    expect(mockOnFilterChange).toHaveBeenCalledWith({
-      categories: [],
-      brands: [],
-      maxPrice: 5000
-    })
+    expect(mockOnClearFilters).toHaveBeenCalled()
   })
 })

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { ordersAPI } from '../services/api'
+import { formatVND } from '../utils/currency'
 import Loading from '../components/Loading'
 import { ShoppingBagIcon } from '@heroicons/react/24/outline'
 
@@ -78,7 +79,7 @@ export default function Orders() {
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </span>
                   <p className="text-lg font-bold text-gray-900">
-                    ${parseFloat(order.total_amount).toFixed(2)}
+                    {formatVND(order.total_amount)}
                   </p>
                 </div>
               </div>
@@ -99,7 +100,7 @@ export default function Orders() {
                       <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                     </div>
                     <p className="font-bold text-gray-900">
-                      ${parseFloat(item.subtotal).toFixed(2)}
+                      {formatVND(item.subtotal)}
                     </p>
                   </div>
                 ))}

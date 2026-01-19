@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { adminAPI } from '../../services/api'
 import Loading from '../../components/Loading'
+import { formatVND } from '../../utils/currency'
 import { useLanguage } from '../../context/LanguageContext'
 import {
   ShoppingBagIcon,
   UsersIcon,
   CubeIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  EnvelopeIcon
 } from '@heroicons/react/24/outline'
 
 export default function AdminDashboard() {
@@ -49,10 +51,21 @@ export default function AdminDashboard() {
   if (loading) return <Loading />
   if (!stats) return <Loading />
 
+  const translateStatus = (status) => {
+    const statusTranslations = {
+      pending: t({ en: 'Pending', vi: 'Đang Chờ' }),
+      processing: t({ en: 'Processing', vi: 'Đang Xử Lý' }),
+      shipped: t({ en: 'Shipped', vi: 'Đã Gửi' }),
+      delivered: t({ en: 'Delivered', vi: 'Đã Giao' }),
+      cancelled: t({ en: 'Cancelled', vi: 'Đã Hủy' })
+    }
+    return statusTranslations[status] || status
+  }
+
   const statCards = [
     {
       name: t({ en: 'Total Revenue', vi: 'Tổng Doanh Thu' }),
-      value: `$${parseFloat(stats.total_revenue || 0).toFixed(2)}`,
+      value: formatVND(stats.total_revenue || 0),
       icon: CurrencyDollarIcon,
       color: 'bg-green-500'
     },
@@ -98,7 +111,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Link
           to="/admin/products"
           className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition"
@@ -124,6 +137,15 @@ export default function AdminDashboard() {
           <UsersIcon className="h-12 w-12 text-primary-600 mb-4" />
           <h3 className="text-lg font-bold text-gray-900">{t({ en: 'Manage Users', vi: 'Quản Lý Người Dùng' })}</h3>
           <p className="text-gray-600 mt-2">{t({ en: 'View and manage user accounts', vi: 'Xem và quản lý tài khoản người dùng' })}</p>
+        </Link>
+
+        <Link
+          to="/admin/messages"
+          className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition"
+        >
+          <EnvelopeIcon className="h-12 w-12 text-primary-600 mb-4" />
+          <h3 className="text-lg font-bold text-gray-900">{t({ en: 'Manage Messages', vi: 'Quản Lý Tin Nhắn' })}</h3>
+          <p className="text-gray-600 mt-2">{t({ en: 'View and respond to contact messages', vi: 'Xem và phản hồi tin nhắn liên hệ' })}</p>
         </Link>
       </div>
 
@@ -170,16 +192,16 @@ export default function AdminDashboard() {
                           ? 'bg-orange-100 text-orange-800' 
                           : 'bg-green-100 text-green-800'
                       }`}>
-                        {order.customer_type}
+                        {order.customer_type === 'Guest' ? t({ en: 'Guest', vi: 'Khách' }) : t({ en: 'Registered', vi: 'Đã đăng ký' })}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${parseFloat(order.total_amount).toFixed(2)}
+                    {formatVND(order.total_amount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                      {order.status}
+                      {translateStatus(order.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

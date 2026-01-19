@@ -1,4 +1,5 @@
 import { useLanguage } from '../context/LanguageContext'
+import { formatVND } from '../utils/currency'
 
 export default function Returns() {
   const { t } = useLanguage()
@@ -175,7 +176,7 @@ export default function Returns() {
                   <ul className="text-blue-700 space-y-1">
                     <li>• {t({ en: 'Defective items', vi: 'Sản phẩm bị lỗi' })}</li>
                     <li>• {t({ en: 'Wrong item shipped', vi: 'Gửi nhầm sản phẩm' })}</li>
-                    <li>• {t({ en: 'Orders over $500', vi: 'Đơn hàng trên $500' })}</li>
+                    <li>• {t({ en: `Orders over ${formatVND(500)}`, vi: `Đơn hàng trên ${formatVND(500)}` })}</li>
                   </ul>
                 </div>
                 <div>
@@ -185,7 +186,7 @@ export default function Returns() {
                   <ul className="text-blue-700 space-y-1">
                     <li>• {t({ en: 'Change of mind', vi: 'Thay đổi ý kiến' })}</li>
                     <li>• {t({ en: 'Ordered wrong item', vi: 'Đặt nhầm sản phẩm' })}</li>
-                    <li>• {t({ en: 'Orders under $500', vi: 'Đơn hàng dưới $500' })}</li>
+                    <li>• {t({ en: `Orders under ${formatVND(500)}`, vi: `Đơn hàng dưới ${formatVND(500)}` })}</li>
                   </ul>
                 </div>
               </div>

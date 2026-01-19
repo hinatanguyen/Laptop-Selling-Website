@@ -58,7 +58,10 @@ router.get('/dashboard', async (req, res, next) => {
 // Get all orders
 router.get('/orders', async (req, res, next) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query
+    const { status, phone } = req.query
+    const phoneDigits = phone ? String(phone).replace(/[^0-9]/g, '') : null
+    const page = parseInt(req.query.page || '1', 10)
+    const limit = parseInt(req.query.limit || '20', 10)
     const offset = (page - 1) * limit
 
     console.log('📋 Admin orders requested with filters:', { status, page, limit })
@@ -78,6 +81,7 @@ router.get('/orders', async (req, res, next) => {
           WHEN o.customer_email IS NOT NULL THEN 'Guest' 
           ELSE 'Registered' 
         END as customer_type,
+        COALESCE(o.customer_phone, u.phone) as phone,
         COALESCE(
           json_agg(
             CASE WHEN oi.id IS NOT NULL THEN
@@ -97,9 +101,19 @@ router.get('/orders', async (req, res, next) => {
     `
 
     const params = []
+    let whereAdded = false
     if (status) {
       queryText += ` WHERE o.status = $1`
       params.push(status)
+      whereAdded = true
+    }
+    if (phoneDigits) {
+      const nextParam = params.length + 1
+      queryText += whereAdded
+        ? ` AND (regexp_replace(COALESCE(o.customer_phone, u.phone), '[^0-9]', '', 'g') LIKE $${nextParam})`
+        : ` WHERE (regexp_replace(COALESCE(o.customer_phone, u.phone), '[^0-9]', '', 'g') LIKE $${nextParam})`
+      params.push(`%${phoneDigits}%`)
+      whereAdded = true
     }
 
     queryText += ` GROUP BY o.id, u.id, u.email, u.full_name ORDER BY o.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
@@ -109,10 +123,34 @@ router.get('/orders', async (req, res, next) => {
     console.log('📋 With parameters:', params)
 
     const result = await query(queryText, params)
-    
-    console.log('📋 Orders found:', result.rows.length)
 
-    res.json(result.rows)
+    // Count total for pagination
+    let countQuery = 'SELECT COUNT(*)::int AS total FROM orders o LEFT JOIN users u ON o.user_id = u.id'
+    const countParams = []
+    let countWhereAdded = false
+    if (status) {
+      countQuery += ' WHERE o.status = $1'
+      countParams.push(status)
+      countWhereAdded = true
+    }
+    if (phoneDigits) {
+      const nextParam = countParams.length + 1
+      countQuery += countWhereAdded
+        ? ` AND (regexp_replace(COALESCE(o.customer_phone, u.phone), '[^0-9]', '', 'g') LIKE $${nextParam})`
+        : ` WHERE (regexp_replace(COALESCE(o.customer_phone, u.phone), '[^0-9]', '', 'g') LIKE $${nextParam})`
+      countParams.push(`%${phoneDigits}%`)
+      countWhereAdded = true
+    }
+    const countRes = await query(countQuery, countParams)
+    const total = countRes.rows[0]?.total || 0
+    const pages = Math.max(1, Math.ceil(total / limit))
+
+    console.log('📋 Orders found:', result.rows.length, 'Total:', total)
+
+    res.json({
+      orders: result.rows,
+      pagination: { total, pages, page, limit }
+    })
   } catch (error) {
     console.error('❌ Admin orders error:', error)
     next(error)
@@ -208,3 +246,69 @@ router.get('/orders/:id', async (req, res, next) => {
 })
 
 export default router
+
+// Contact messages (Admin)
+router.get('/contact-messages', async (req, res, next) => {
+  try {
+    const { status } = req.query
+    const page = parseInt(req.query.page || '1', 10)
+    const limit = parseInt(req.query.limit || '20', 10)
+    const offset = (page - 1) * limit
+
+    let sql = `SELECT * FROM contact_messages`
+    const params = []
+    if (status) {
+      sql += ` WHERE status = $1`
+      params.push(status)
+    }
+    sql += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
+    params.push(limit, offset)
+
+    const rows = await query(sql, params)
+
+    let countSql = 'SELECT COUNT(*)::int AS total FROM contact_messages'
+    const countParams = []
+    if (status) {
+      countSql += ' WHERE status = $1'
+      countParams.push(status)
+    }
+    const totalRes = await query(countSql, countParams)
+    const total = totalRes.rows[0].total
+
+    res.json({ messages: rows.rows, pagination: { total, page, limit, pages: Math.max(1, Math.ceil(total / limit)) } })
+  } catch (err) {
+    next(err)
+  }
+})
+
+router.patch('/contact-messages/:id/status', async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+    const allowed = ['new', 'resolved']
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' })
+    }
+
+    const result = await query('UPDATE contact_messages SET status = $1 WHERE id = $2 RETURNING *', [status, id])
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Message not found' })
+    }
+    res.json(result.rows[0])
+  } catch (err) {
+    next(err)
+  }
+})
+
+router.delete('/contact-messages/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const result = await query('DELETE FROM contact_messages WHERE id = $1 RETURNING id', [id])
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Message not found' })
+    }
+    res.json({ message: 'Deleted' })
+  } catch (err) {
+    next(err)
+  }
+})

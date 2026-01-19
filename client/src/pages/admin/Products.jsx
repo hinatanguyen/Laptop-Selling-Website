@@ -6,6 +6,7 @@ import axios from 'axios'
 import Loading from '../../components/Loading'
 import { useLanguage } from '../../context/LanguageContext'
 import { PencilIcon, TrashIcon, PlusIcon, PhotoIcon, XMarkIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { formatVND } from '../../utils/currency'
 
 export default function AdminProducts() {
   const { t } = useLanguage()
@@ -88,10 +89,10 @@ export default function AdminProducts() {
 
       if (editingProduct) {
         await adminAPI.updateProduct(editingProduct.id, productData)
-        toast.success('Product updated successfully')
+        toast.success(t({ en: 'Product updated successfully', vi: 'Cập nhật sản phẩm thành công' }))
       } else {
         await adminAPI.createProduct(productData)
-        toast.success('Product created successfully')
+        toast.success(t({ en: 'Product created successfully', vi: 'Tạo sản phẩm thành công' }))
       }
       setShowModal(false)
       resetForm()
@@ -151,7 +152,7 @@ export default function AdminProducts() {
   }
 
   const addImageUrl = () => {
-    const url = prompt('Enter image URL:')
+    const url = prompt(t({ en: 'Enter image URL:', vi: 'Nhập URL ảnh:' }))
     if (url) {
       setFormData(prev => ({
         ...prev,
@@ -232,8 +233,8 @@ export default function AdminProducts() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header with Back Button */}
-      <div className="flex items-center gap-4 mb-8">
+      {/* Back Button above title */}
+      <div className="mb-4">
         <button
           onClick={() => navigate('/admin')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -241,7 +242,10 @@ export default function AdminProducts() {
           <ArrowLeftIcon className="h-5 w-5" />
           <span className="font-medium">{t({ en: 'Back to Dashboard', vi: 'Về Bảng Điều Khiển' })}</span>
         </button>
-        <div className="h-6 w-px bg-gray-300"></div>
+      </div>
+
+      {/* Title and actions */}
+      <div className="flex items-start justify-between mb-8">
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Manage Products', vi: 'Quản Lý Sản Phẩm' })}</h1>
           <p className="text-gray-600 mt-1">{t({ en: 'Total:', vi: 'Tổng cộng:' })} {totalProducts} {t({ en: 'products', vi: 'sản phẩm' })}</p>
@@ -278,22 +282,22 @@ export default function AdminProducts() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Product
+                {t({ en: 'Product', vi: 'Sản Phẩm' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Category
+                {t({ en: 'Category', vi: 'Danh Mục' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Price
+                {t({ en: 'Price', vi: 'Giá' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Stock
+                {t({ en: 'Stock', vi: 'Tồn Kho' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Featured
+                {t({ en: 'Featured', vi: 'Nổi Bật' })}
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                Actions
+                {t({ en: 'Actions', vi: 'Hành Động' })}
               </th>
             </tr>
           </thead>
@@ -314,13 +318,13 @@ export default function AdminProducts() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">{product.category}</td>
-                <td className="px-6 py-4 text-sm text-gray-900">${product.price}</td>
+                <td className="px-6 py-4 text-sm text-gray-900">{formatVND(product.price)}</td>
                 <td className="px-6 py-4 text-sm text-gray-900">{product.stock}</td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 text-xs rounded-full ${
                     product.featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {product.featured ? 'Yes' : 'No'}
+                    {product.featured ? t({ en: 'Yes', vi: 'Có' }) : t({ en: 'No', vi: 'Không' })}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right text-sm font-medium">
@@ -449,6 +453,8 @@ export default function AdminProducts() {
                       <option value="Lenovo">Lenovo</option>
                       <option value="Acer">Acer</option>
                       <option value="Apple">Apple</option>
+                      <option value="Microsoft">Microsoft</option>
+                      <option value="Razer">Razer</option>
                       <option value="MSI">MSI</option>
                       <option value="Samsung">Samsung</option>
                       <option value="LG">LG</option>
@@ -689,7 +695,7 @@ export default function AdminProducts() {
               {/* Images Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Images (Max 5)
+                  {t({ en: 'Product Images (Max 5)', vi: 'Ảnh Sản Phẩm (Tối đa 5)' })}
                 </label>
                 
                 {/* Image Preview Grid */}
@@ -720,7 +726,7 @@ export default function AdminProducts() {
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary-500 transition">
                       <PhotoIcon className="h-8 w-8 mx-auto text-gray-400 mb-2" />
                       <span className="text-sm text-gray-600">
-                        {uploading ? 'Uploading...' : 'Upload Images'}
+                        {uploading ? t({ en: 'Uploading...', vi: 'Đang tải lên...' }) : t({ en: 'Upload Images', vi: 'Tải ảnh lên' })}
                       </span>
                     </div>
                     <input

@@ -4,6 +4,7 @@ import { productsAPI } from '../services/api'
 import ProductCard from '../components/ProductCard'
 import Loading from '../components/Loading'
 import { useLanguage } from '../context/LanguageContext'
+import { formatVND } from '../utils/currency'
 
 const slides = [
   {
@@ -37,7 +38,7 @@ const categories = [
 ]
 
 const features = [
-  { icon: '🚚', title: { en: 'Free Shipping', vi: 'Miễn Phí Vận Chuyển' }, text: { en: 'On orders over $500', vi: 'Cho đơn hàng trên $500' } },
+  { icon: '🚚', title: { en: 'Free Shipping', vi: 'Miễn Phí Vận Chuyển' }, text: { en: `On orders over ${formatVND(500)}`, vi: `Cho đơn hàng trên ${formatVND(500)}` } },
   { icon: '🛡️', title: { en: 'Secure Payment', vi: 'Thanh Toán An Toàn' }, text: { en: '100% secure transactions', vi: '100% giao dịch bảo mật' } },
   { icon: '↩️', title: { en: '30-Day Returns', vi: 'Đổi Trả 30 Ngày' }, text: { en: 'Easy return policy', vi: 'Chính sách đổi trả dễ dàng' } },
   { icon: '💬', title: { en: '24/7 Support', vi: 'Hỗ Trợ 24/7' }, text: { en: 'Dedicated customer service', vi: 'Dịch vụ khách hàng tận tâm' } },

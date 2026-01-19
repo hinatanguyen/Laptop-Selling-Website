@@ -1,4 +1,5 @@
 import { useLanguage } from '../context/LanguageContext'
+import { formatVND } from '../utils/currency'
 
 export default function ShippingInfo() {
   const { t } = useLanguage()
@@ -29,8 +30,8 @@ export default function ShippingInfo() {
                 </p>
                 <p className="text-sm text-gray-500">
                   {t({ 
-                    en: 'Available on orders over $500',
-                    vi: 'Áp dụng cho đơn hàng trên $500'
+                    en: `Available on orders over ${formatVND(500)}`,
+                    vi: `Áp dụng cho đơn hàng trên ${formatVND(500)}`
                   })}
                 </p>
               </div>
@@ -39,7 +40,7 @@ export default function ShippingInfo() {
                 <h3 className="text-lg font-semibold mb-2 text-primary-600">
                   {t({ en: 'Express Shipping', vi: 'Vận Chuyển Nhanh' })}
                 </h3>
-                <p className="text-2xl font-bold mb-2">$19.99</p>
+                <p className="text-2xl font-bold mb-2">{formatVND(19.99)}</p>
                 <p className="text-gray-600 mb-4">
                   {t({ en: '2-3 business days', vi: '2-3 ngày làm việc' })}
                 </p>
@@ -55,7 +56,7 @@ export default function ShippingInfo() {
                 <h3 className="text-lg font-semibold mb-2 text-primary-600">
                   {t({ en: 'Overnight Shipping', vi: 'Vận Chuyển Qua Đêm' })}
                 </h3>
-                <p className="text-2xl font-bold mb-2">$39.99</p>
+                <p className="text-2xl font-bold mb-2">{formatVND(39.99)}</p>
                 <p className="text-gray-600 mb-4">
                   {t({ en: 'Next business day', vi: 'Ngày làm việc tiếp theo' })}
                 </p>
@@ -129,9 +130,9 @@ export default function ShippingInfo() {
                   })}
                 </p>
                 <ul className="text-sm text-gray-500 space-y-1">
-                  <li>• {t({ en: 'Free shipping on orders over $500', vi: 'Miễn phí vận chuyển cho đơn hàng trên $500' })}</li>
+                  <li>• {t({ en: `Free shipping on orders over ${formatVND(500)}`, vi: `Miễn phí vận chuyển cho đơn hàng trên ${formatVND(500)}` })}</li>
                   <li>• {t({ en: 'No PO Box shipping', vi: 'Không gửi hàng đến hộp thư bưu điện' })}</li>
-                  <li>• {t({ en: 'Signature required for orders over $1,000', vi: 'Yêu cầu chữ ký cho đơn hàng trên $1,000' })}</li>
+                  <li>• {t({ en: `Signature required for orders over ${formatVND(1000)}`, vi: `Yêu cầu chữ ký cho đơn hàng trên ${formatVND(1000)}` })}</li>
                 </ul>
               </div>
 

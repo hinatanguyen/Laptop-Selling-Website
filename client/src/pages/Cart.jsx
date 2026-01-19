@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { TrashIcon, MinusIcon, PlusIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'
 import { useCartStore } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
+import { formatVND } from '../utils/currency'
 
 export default function Cart() {
   const { t } = useLanguage()
@@ -70,7 +71,7 @@ export default function Cart() {
                   {item.name}
                 </Link>
                 <p className="text-gray-600 text-sm mt-1">{item.brand}</p>
-                <p className="text-primary-600 font-bold mt-2">${parseFloat(item.price || 0).toFixed(2)}</p>
+                <p className="text-primary-600 font-bold mt-2">{formatVND(item.price)}</p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -93,7 +94,7 @@ export default function Cart() {
 
               <div className="text-right">
                 <p className="text-lg font-bold text-gray-900">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  {formatVND(item.price * item.quantity)}
                 </p>
                 <button
                   onClick={() => removeItem(item.id)}
@@ -115,7 +116,7 @@ export default function Cart() {
             <div className="space-y-3 border-b border-gray-200 pb-4">
               <div className="flex justify-between text-gray-600">
                 <span>{t({ en: 'Subtotal', vi: 'Tạm Tính' })}</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{formatVND(subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>{t({ en: 'Shipping', vi: 'Phí Vận Chuyển' })}</span>
@@ -123,13 +124,13 @@ export default function Cart() {
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>{t({ en: 'Tax (10%)', vi: 'Thuế (10%)' })}</span>
-                <span>${tax.toFixed(2)}</span>
+                <span>{formatVND(tax)}</span>
               </div>
             </div>
 
             <div className="flex justify-between text-xl font-bold text-gray-900 mt-4">
               <span>{t({ en: 'Total', vi: 'Tổng Cộng' })}</span>
-              <span>${total.toFixed(2)}</span>
+              <span>{formatVND(total)}</span>
             </div>
 
             <Link

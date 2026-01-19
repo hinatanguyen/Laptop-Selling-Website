@@ -5,6 +5,7 @@ import ProductCard from '../components/ProductCard'
 import FilterSidebar from '../components/FilterSidebar'
 import Loading from '../components/Loading'
 import { useLanguage } from '../context/LanguageContext'
+import { BRANDS } from '../utils/brands'
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -18,10 +19,11 @@ export default function Products() {
   const [filters, setFilters] = useState({
     categories: searchParams.get('category') ? [searchParams.get('category')] : [],
     brands: searchParams.get('brand') ? [searchParams.get('brand')] : [],
-    maxPrice: 5000,
+    priceRanges: [],
     search: searchParams.get('search') || ''
   })
   const [sortBy, setSortBy] = useState('featured')
+  const [availableBrands, setAvailableBrands] = useState(BRANDS)
 
   // Update filters when URL search params change
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function Products() {
       const { data } = await productsAPI.getAll({
         categories: filters.categories.join(','),
         brands: filters.brands.join(','),
-        maxPrice: filters.maxPrice,
+        priceRanges: filters.priceRanges.join(','),
         search: filters.search,
         sortBy,
         page: currentPage,
@@ -80,8 +82,12 @@ export default function Products() {
           : [...prev.brands, value]
         return { ...prev, brands }
       }
-      if (type === 'maxPrice') {
-        return { ...prev, maxPrice: value }
+      if (type === 'priceRangeToggle') {
+        const exists = prev.priceRanges.includes(value)
+        const priceRanges = exists
+          ? prev.priceRanges.filter(id => id !== value)
+          : [...prev.priceRanges, value]
+        return { ...prev, priceRanges }
       }
       return prev
     })
@@ -92,7 +98,7 @@ export default function Products() {
     setFilters({
       categories: [],
       brands: [],
-      maxPrice: 5000,
+      priceRanges: [],
       search: ''
     })
     setSearchParams({})
@@ -120,6 +126,7 @@ export default function Products() {
             filters={filters}
             onFilterChange={handleFilterChange}
             onClearFilters={clearFilters}
+            brandsOptions={availableBrands}
           />
         </div>
 

@@ -14,8 +14,7 @@ import Products from './pages/Products'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
-import Login from './pages/Login'
-import Register from './pages/Register'
+import AdminLogin from './pages/admin/AdminLogin'
 import Profile from './pages/Profile'
 import Orders from './pages/Orders'
 import OrderDetail from './pages/OrderDetail'
@@ -23,6 +22,7 @@ import AdminDashboard from './pages/admin/Dashboard'
 import AdminProducts from './pages/admin/Products'
 import AdminOrders from './pages/admin/Orders'
 import AdminUsers from './pages/admin/Users'
+import AdminMessages from './pages/admin/Messages'
 import NotFound from './pages/NotFound'
 
 // Footer Pages
@@ -82,8 +82,7 @@ function AppContent() {
           <Route path="products/:slug" element={<ProductDetail />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
+          {/* User login/register removed */}
           
           {/* Footer Pages */}
           <Route path="about" element={<About />} />
@@ -101,12 +100,16 @@ function AppContent() {
           <Route path="orders" element={<Orders />} />
           <Route path="orders/:id" element={<OrderDetail />} />
           
-          {/* Admin Routes */}
-          <Route path="admin" element={<AdminDashboard />} />
-          <Route path="admin/products" element={<AdminProducts />} />
-          <Route path="admin/orders" element={<AdminOrders />} />
-          <Route path="admin/orders/:id" element={<OrderDetail />} />
-          <Route path="admin/users" element={<AdminUsers />} />
+          {/* Admin Login */}
+          <Route path="admin/login" element={<AdminLogin />} />
+
+          {/* Admin Routes (protected) */}
+          <Route path="admin" element={<ProtectedAdmin><AdminDashboard /></ProtectedAdmin>} />
+          <Route path="admin/products" element={<ProtectedAdmin><AdminProducts /></ProtectedAdmin>} />
+          <Route path="admin/orders" element={<ProtectedAdmin><AdminOrders /></ProtectedAdmin>} />
+          <Route path="admin/orders/:id" element={<ProtectedAdmin><OrderDetail /></ProtectedAdmin>} />
+          <Route path="admin/users" element={<ProtectedAdmin><AdminUsers /></ProtectedAdmin>} />
+          <Route path="admin/messages" element={<ProtectedAdmin><AdminMessages /></ProtectedAdmin>} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
@@ -116,3 +119,15 @@ function AppContent() {
 }
 
 export default App
+
+// Simple admin route guard
+import { useAuth } from './context/AuthContext'
+import { Navigate } from 'react-router-dom'
+
+function ProtectedAdmin({ children }) {
+  const { isAdmin } = useAuth()
+  if (!isAdmin) {
+    return <Navigate to="/admin/login" replace />
+  }
+  return children
+}

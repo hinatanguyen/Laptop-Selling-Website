@@ -40,8 +40,8 @@ export default function AdminUsers() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header with Back Button */}
-      <div className="flex items-center gap-4 mb-8">
+      {/* Back Button above title */}
+      <div className="mb-4">
         <button
           onClick={() => navigate('/admin')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -49,9 +49,10 @@ export default function AdminUsers() {
           <ArrowLeftIcon className="h-5 w-5" />
           <span className="font-medium">{t({ en: 'Back to Dashboard', vi: 'Về Bảng Điều Khiển' })}</span>
         </button>
-        <div className="h-6 w-px bg-gray-300"></div>
+      </div>
+      <div className="flex items-start justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Manage Users', vi: 'Quản Lý Người Dùng' })}</h1>
-        <div className="ml-auto text-sm text-gray-600">
+        <div className="text-sm text-gray-600">
           {t({ en: 'Total Users:', vi: 'Tổng Số Người Dùng:' })} <span className="font-semibold">{users.length}</span>
         </div>
       </div>
@@ -65,7 +66,7 @@ export default function AdminUsers() {
                 {t({ en: 'User', vi: 'Người Dùng' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
+                {t({ en: 'Email', vi: 'Email' })}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t({ en: 'Phone', vi: 'Số Điện Thoại' })}
@@ -122,7 +123,7 @@ export default function AdminUsers() {
                           : 'bg-green-100 text-green-800'
                       }`}
                     >
-                      {user.role}
+                      {user.role === 'admin' ? t({ en: 'Admin', vi: 'Quản trị' }) : t({ en: 'Customer', vi: 'Khách hàng' })}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -143,7 +144,7 @@ export default function AdminUsers() {
               <UserIcon className="h-8 w-8 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Customers</p>
+              <p className="text-sm font-medium text-gray-500">{t({ en: 'Total Customers', vi: 'Tổng số khách hàng' })}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {users.filter((u) => u.role === 'customer').length}
               </p>
@@ -157,7 +158,7 @@ export default function AdminUsers() {
               <ShieldCheckIcon className="h-8 w-8 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Admins</p>
+              <p className="text-sm font-medium text-gray-500">{t({ en: 'Total Admins', vi: 'Tổng số quản trị viên' })}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {users.filter((u) => u.role === 'admin').length}
               </p>
@@ -171,7 +172,7 @@ export default function AdminUsers() {
               <UserIcon className="h-8 w-8 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">New This Month</p>
+              <p className="text-sm font-medium text-gray-500">{t({ en: 'New This Month', vi: 'Mới trong tháng này' })}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {
                   users.filter((u) => {

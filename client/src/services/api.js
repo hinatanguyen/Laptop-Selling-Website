@@ -63,11 +63,7 @@ export const ordersAPI = {
 // Auth API
 export const authService = {
   login: async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password })
-    return data
-  },
-  register: async (userData) => {
-    const { data } = await api.post('/auth/register', userData)
+    const { data } = await api.post('/auth/admin/login', { email, password })
     return data
   },
   getProfile: async () => {
@@ -92,7 +88,11 @@ export const adminAPI = {
   updateProduct: (id, data) => api.put(`/products/${id}`, data),
   deleteProduct: (id) => api.delete(`/products/${id}`),
   // User management
-  getUsers: () => api.get('/admin/users')
+  getUsers: () => api.get('/admin/users'),
+  // Contact messages
+  getContactMessages: (params) => api.get('/admin/contact-messages', { params }),
+  updateContactMessageStatus: (id, status) => api.patch(`/admin/contact-messages/${id}/status`, { status }),
+  deleteContactMessage: (id) => api.delete(`/admin/contact-messages/${id}`)
 }
 
 // Shop Reviews API (public)

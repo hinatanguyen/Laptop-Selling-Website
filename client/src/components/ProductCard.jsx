@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { ShoppingCartIcon } from '@heroicons/react/24/outline'
 import { useCartStore } from '../context/CartContext'
+import { formatVND } from '../utils/currency'
 import { useLanguage } from '../context/LanguageContext'
 import toast from 'react-hot-toast'
 
@@ -75,7 +76,7 @@ function ProductCard({ product }) {
         <div className="flex items-center justify-between pt-4 border-t">
           <div>
             <p className="text-2xl font-bold text-primary-600">
-              ${parseFloat(product.price || 0).toFixed(2)}
+              {formatVND(product.price)}
             </p>
             {product.stock > 0 && product.stock <= 5 && (
               <p className="text-xs text-orange-600 font-semibold">

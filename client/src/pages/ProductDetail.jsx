@@ -6,6 +6,7 @@ import Loading from '../components/Loading'
 import ProductCard from '../components/ProductCard'
 import toast from 'react-hot-toast'
 import { useLanguage } from '../context/LanguageContext'
+import { formatVND } from '../utils/currency'
 import { ShoppingCartIcon, HeartIcon, ShareIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export default function ProductDetail() {
@@ -68,7 +69,7 @@ export default function ProductDetail() {
       // Get products from the same category, excluding current product
       const { data } = await productsAPI.getAll({
         limit: 20, // Get more to filter out current product
-        category: currentProduct.category
+        categories: currentProduct.category
       })
       
       let relatedItems = (data.products || data || []).filter(p => p.id !== currentProduct.id)
@@ -78,7 +79,7 @@ export default function ProductDetail() {
         try {
           const { data: brandData } = await productsAPI.getAll({
             limit: 20,
-            brand: currentProduct.brand
+            brands: currentProduct.brand
           })
           
           // Add brand products that aren't already included and aren't the current product
@@ -259,7 +260,7 @@ export default function ProductDetail() {
 
           <div className="mb-6">
             <div className="text-4xl font-bold text-primary-600 mb-2">
-              ${parseFloat(product.price || 0).toFixed(2)}
+              {formatVND(product.price)}
             </div>
             {product.stock > 0 ? (
               <div className="flex items-center gap-2">
@@ -442,7 +443,7 @@ export default function ProductDetail() {
           <div className="border-t pt-6 space-y-3 text-sm">
             <div className="flex items-center gap-2 text-gray-600">
               <span>🚚</span>
-              <span>{t({ en: 'Free shipping on orders over $500', vi: 'Miễn phí vận chuyển cho đơn hàng trên $500' })}</span>
+              <span>{t({ en: `Free shipping on orders over ${formatVND(500)}`, vi: `Miễn phí vận chuyển cho đơn hàng trên ${formatVND(500)}` })}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
               <span>↩️</span>

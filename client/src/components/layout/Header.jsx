@@ -40,6 +40,9 @@ const categories = [
       { name: { en: 'Lenovo', vi: 'Lenovo' }, href: '/products?brand=Lenovo' },
       { name: { en: 'Microsoft', vi: 'Microsoft' }, href: '/products?brand=Microsoft' },
       { name: { en: 'Acer', vi: 'Acer' }, href: '/products?brand=Acer' },
+      { name: { en: 'MSI', vi: 'MSI' }, href: '/products?brand=MSI' },
+      { name: { en: 'Samsung', vi: 'Samsung' }, href: '/products?brand=Samsung' },
+      { name: { en: 'LG', vi: 'LG' }, href: '/products?brand=LG' },
       { name: { en: 'Razer', vi: 'Razer' }, href: '/products?brand=Razer' },
     ],
   },
@@ -74,10 +77,9 @@ export default function Header() {
             {user ? (
               <span>{t({ en: 'Welcome', vi: 'Chào mừng' })}, {user.full_name || user.email}!</span>
             ) : (
-              <>
-                <Link to="/login" className="hover:underline">{t({ en: 'Login', vi: 'Đăng nhập' })}</Link>
-                <Link to="/register" className="hover:underline">{t({ en: 'Register', vi: 'Đăng ký' })}</Link>
-              </>
+              <Link to="/admin/login" className="hover:underline">
+                {t({ en: 'Admin Login', vi: 'Đăng nhập Quản trị' })}
+              </Link>
             )}
           </div>
         </div>
@@ -218,11 +220,7 @@ export default function Header() {
                   </Menu.Items>
                 </Transition>
               </Menu>
-            ) : (
-              <Link to="/login" className="p-2 hover:bg-gray-100 rounded-full transition">
-                <UserIcon className="w-6 h-6 text-gray-700" />
-              </Link>
-            )}
+            ) : null}
 
             {/* Cart */}
             <Link to="/cart" className="relative p-2 hover:bg-gray-100 rounded-full transition">
@@ -258,6 +256,11 @@ export default function Header() {
           <div className="px-4 py-4 space-y-4">
             <Link to="/" className="block text-gray-700 font-semibold">{t({ en: 'Home', vi: 'Trang chủ' })}</Link>
             <Link to="/products" className="block text-gray-700 font-semibold">{t({ en: 'Products', vi: 'Sản phẩm' })}</Link>
+            {!user && (
+              <Link to="/admin/login" className="block text-gray-700 font-semibold">
+                {t({ en: 'Admin Login', vi: 'Đăng nhập Quản trị' })}
+              </Link>
+            )}
             {isAdmin && (
               <Link to="/admin" className="block text-gray-700 font-semibold">{t({ en: 'Admin', vi: 'Quản lý' })}</Link>
             )}

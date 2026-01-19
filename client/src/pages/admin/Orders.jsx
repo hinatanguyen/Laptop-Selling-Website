@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { adminAPI } from '../../services/api'
+import { formatVND } from '../../utils/currency'
 import Loading from '../../components/Loading'
 import { useLanguage } from '../../context/LanguageContext'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
@@ -22,6 +23,16 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState('all')
+  const [phoneQuery, setPhoneQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalOrders, setTotalOrders] = useState(0)
+  const limit = 20
+
+  // Scroll to top when changing pages
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [currentPage])
 
   const translateStatus = (status) => {
     const statusTranslations = {
@@ -36,13 +47,28 @@ export default function AdminOrders() {
 
   useEffect(() => {
     loadOrders()
-  }, [filterStatus])
+  }, [filterStatus, currentPage, phoneQuery])
 
   const loadOrders = async () => {
     try {
-      const params = filterStatus !== 'all' ? { status: filterStatus } : {}
+      const params = {
+        page: currentPage,
+        limit,
+        ...(filterStatus !== 'all' ? { status: filterStatus } : {}),
+        ...(phoneQuery ? { phone: phoneQuery } : {})
+      }
       const response = await adminAPI.getOrders(params)
-      setOrders(response.data)
+      const data = response.data
+      // Support both new (object) and old (array) responses
+      if (Array.isArray(data)) {
+        setOrders(data)
+        setTotalPages(1)
+        setTotalOrders(data.length)
+      } else {
+        setOrders(data.orders || [])
+        setTotalPages(data.pagination?.pages || 1)
+        setTotalOrders(data.pagination?.total || (data.orders?.length || 0))
+      }
     } catch (error) {
       toast.error(t({ en: 'Failed to load orders', vi: 'Không thể tải đơn hàng' }))
     } finally {
@@ -64,8 +90,8 @@ export default function AdminOrders() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header with Back Button */}
-      <div className="flex items-center gap-4 mb-8">
+      {/* Back Button above title */}
+      <div className="mb-4">
         <button
           onClick={() => navigate('/admin')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -73,25 +99,42 @@ export default function AdminOrders() {
           <ArrowLeftIcon className="h-5 w-5" />
           <span className="font-medium">{t({ en: 'Back to Dashboard', vi: 'Về Bảng Điều Khiển' })}</span>
         </button>
-        <div className="h-6 w-px bg-gray-300"></div>
+      </div>
+      <div className="flex items-start justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-900">{t({ en: 'Manage Orders', vi: 'Quản Lý Đơn Hàng' })}</h1>
+        <div className="text-sm text-gray-600">
+          {t({ en: 'Total Orders:', vi: 'Tổng số đơn hàng:' })} <span className="font-semibold">{totalOrders}</span>
+        </div>
       </div>
 
-      {/* Filter */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Filter by Status', vi: 'Lọc Theo Trạng Thái' })}</label>
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="all">{t({ en: 'All Orders', vi: 'Tất Cả Đơn Hàng' })}</option>
-          <option value="pending">{t({ en: 'Pending', vi: 'Đang Chờ' })}</option>
-          <option value="processing">{t({ en: 'Processing', vi: 'Đang Xử Lý' })}</option>
-          <option value="shipped">{t({ en: 'Shipped', vi: 'Đã Gửi' })}</option>
-          <option value="delivered">{t({ en: 'Delivered', vi: 'Đã Giao' })}</option>
-          <option value="cancelled">{t({ en: 'Cancelled', vi: 'Đã Hủy' })}</option>
-        </select>
+      {/* Filters */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Filter by Status', vi: 'Lọc Theo Trạng Thái' })}</label>
+          <select
+            value={filterStatus}
+            onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1) }}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="all">{t({ en: 'All Orders', vi: 'Tất Cả Đơn Hàng' })}</option>
+            <option value="pending">{t({ en: 'Pending', vi: 'Đang Chờ' })}</option>
+            <option value="processing">{t({ en: 'Processing', vi: 'Đang Xử Lý' })}</option>
+            <option value="shipped">{t({ en: 'Shipped', vi: 'Đã Gửi' })}</option>
+            <option value="delivered">{t({ en: 'Delivered', vi: 'Đã Giao' })}</option>
+            <option value="cancelled">{t({ en: 'Cancelled', vi: 'Đã Hủy' })}</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t({ en: 'Search by phone', vi: 'Tìm theo số điện thoại' })}</label>
+          <input
+            type="text"
+            value={phoneQuery}
+            onChange={(e) => { setPhoneQuery(e.target.value); setCurrentPage(1) }}
+            placeholder={t({ en: 'Enter phone number...', vi: 'Nhập số điện thoại...' })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          />
+          <p className="text-xs text-gray-500 mt-1">{t({ en: 'Matches guest or user phone.', vi: 'Khớp số điện thoại của khách hoặc người dùng.' })}</p>
+        </div>
       </div>
 
       {/* Orders Table */}
@@ -137,6 +180,9 @@ export default function AdminOrders() {
                   <div>
                     <p className="text-sm font-medium text-gray-900">{order.full_name}</p>
                     <p className="text-sm text-gray-500">{order.email}</p>
+                    {order.phone && (
+                      <p className="text-sm text-gray-500">{order.phone}</p>
+                    )}
                     <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
                       order.customer_type === 'Guest' 
                         ? 'bg-orange-100 text-orange-800' 
@@ -161,7 +207,7 @@ export default function AdminOrders() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${parseFloat(order.total_amount).toFixed(2)}
+                  {formatVND(order.total_amount)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 text-xs rounded-full ${statusColors[order.status]}`}>
@@ -195,6 +241,52 @@ export default function AdminOrders() {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-6 flex justify-center items-center gap-2">
+          <button
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t({ en: 'Previous', vi: 'Trước' })}
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => {
+            const page = index + 1
+            if (
+              page === 1 ||
+              page === totalPages ||
+              (page >= currentPage - 2 && page <= currentPage + 2)
+            ) {
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-4 py-2 border rounded-lg ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            } else if (page === currentPage - 3 || page === currentPage + 3) {
+              return <span key={page} className="px-2">...</span>
+            }
+            return null
+          })}
+
+          <button
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t({ en: 'Next', vi: 'Tiếp' })}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

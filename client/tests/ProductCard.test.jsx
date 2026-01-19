@@ -22,7 +22,8 @@ describe('ProductCard Component', () => {
 
     expect(screen.getByText('Test Laptop')).toBeInTheDocument()
     expect(screen.getByText('TestBrand')).toBeInTheDocument()
-    expect(screen.getByText('$999.99')).toBeInTheDocument()
+    // Price should be displayed in VND format
+    expect(screen.getByText(/₫/)).toBeInTheDocument()
   })
 
   it('shows featured badge when product is featured', () => {

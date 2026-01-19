@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import axios from 'axios'
 import { useLanguage } from '../context/LanguageContext'
 import toast from 'react-hot-toast'
 
@@ -11,14 +12,18 @@ export default function Contact() {
     message: ''
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement contact form submission
-    toast.success(t({ 
-      en: 'Message sent successfully! We\'ll get back to you soon.',
-      vi: 'Tin nhắn đã được gửi thành công! Chúng tôi sẽ liên hệ lại sớm nhất.'
-    }))
-    setFormData({ name: '', email: '', subject: '', message: '' })
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/contact`, formData)
+      toast.success(t({ 
+        en: 'Message sent successfully! We\'ll get back to you soon.',
+        vi: 'Tin nhắn đã được gửi thành công! Chúng tôi sẽ liên hệ lại sớm nhất.'
+      }))
+      setFormData({ name: '', email: '', subject: '', message: '' })
+    } catch (error) {
+      toast.error(error.response?.data?.message || t({ en: 'Failed to send message', vi: 'Gửi tin nhắn thất bại' }))
+    }
   }
 
   const handleChange = (e) => {
@@ -174,6 +179,7 @@ export default function Contact() {
                   value={formData.message}
                   onChange={handleChange}
                   required
+                  minLength={10}
                   rows={5}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   placeholder={t({ 
@@ -181,6 +187,9 @@ export default function Contact() {
                     vi: 'Vui lòng mô tả chi tiết yêu cầu của bạn...'
                   })}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  {t({ en: 'Minimum 10 characters.', vi: 'Tối thiểu 10 ký tự.' })}
+                </p>
               </div>
 
               <button

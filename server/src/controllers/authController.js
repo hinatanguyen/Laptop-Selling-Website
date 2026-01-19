@@ -80,6 +80,49 @@ export const login = async (req, res, next) => {
   }
 }
 
+// Admin-only Login
+export const adminLogin = async (req, res, next) => {
+  try {
+    const { email, password } = req.body
+
+    const result = await query(
+      'SELECT id, email, password_hash, full_name, phone, role FROM users WHERE email = $1',
+      [email]
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid credentials' })
+    }
+
+    const user = result.rows[0]
+
+    // Only allow admin role
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access only' })
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password_hash)
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'Invalid credentials' })
+    }
+
+    const token = generateToken(user.id)
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        phone: user.phone,
+        role: user.role
+      },
+      token
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 // Get profile
 export const getProfile = async (req, res, next) => {
   try {

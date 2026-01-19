@@ -18,6 +18,7 @@ import orderRoutes from './routes/orders.js'
 import adminRoutes from './routes/admin.js'
 import uploadRoutes from './routes/upload.js'
 import reviewRoutes from './routes/reviews.js'
+import contactRoutes from './routes/contact.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -79,8 +80,12 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(rateLimiterMiddleware)
 
-// Serve static files (uploaded images)
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')))
+// Serve static files (uploaded images) with caching
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), {
+  maxAge: '30d',
+  etag: true,
+  immutable: true
+}))
 
 // Routes
 app.use('/api/products', productRoutes)
@@ -90,6 +95,7 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/upload', uploadRoutes)
 app.use('/api/reviews', reviewRoutes)
+app.use('/api/contact', contactRoutes)
 
 // Health check
 app.get('/health', async (req, res) => {
