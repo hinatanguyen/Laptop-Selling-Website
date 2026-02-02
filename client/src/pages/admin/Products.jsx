@@ -127,7 +127,13 @@ export default function AdminProducts() {
           }
         )
 
-        uploadedUrls.push(`http://localhost:5000${response.data.imageUrl}`)
+        // Use the full URL from response (Azure URL or local path)
+        const imageUrl = response.data.imageUrl
+        const fullUrl = imageUrl.startsWith('http') 
+          ? imageUrl 
+          : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${imageUrl}`
+        console.log('📸 Image uploaded:', { imageUrl, fullUrl })
+        uploadedUrls.push(fullUrl)
       }
 
       setFormData(prev => ({

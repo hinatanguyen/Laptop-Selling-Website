@@ -9,8 +9,14 @@ class NotificationService {
   init(server) {
     this.io = new SocketIOServer(server, {
       cors: {
-        origin: ["http://localhost:3000", "http://localhost:5173"],
-        methods: ["GET", "POST"]
+        origin: [
+          "http://localhost:3000", 
+          "http://localhost:5173",
+          process.env.FRONTEND_URL,
+          "https://mango-desert-0c82ffb00.4.azurestaticapps.net"
+        ].filter(Boolean),
+        methods: ["GET", "POST"],
+        credentials: true
       }
     })
 
