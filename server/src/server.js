@@ -64,10 +64,15 @@ app.use(cors({
       process.env.FRONTEND_URL
     ].filter(Boolean)
     
+    // Check if origin is in allowed list or is localhost
     if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost:')) {
       callback(null, true)
+    } else if (process.env.NODE_ENV === 'production' && process.env.FRONTEND_URL) {
+      // In production, only allow specified frontend URL
+      callback(null, origin === process.env.FRONTEND_URL)
     } else {
-      callback(null, true) // Allow all origins in development
+      // In development, allow all origins
+      callback(null, true)
     }
   },
   credentials: true,
