@@ -17,7 +17,9 @@
     "seed:orders:count": "node src/scripts/seed-orders.js 100",
     "cleanup:nonproduct": "node src/scripts/cleanup-nonproduct.js",
     "migrate:indexes": "node src/scripts/migrate-indexes.js",
-    "migrate:contact": "node src/scripts/migrate-contact.js"
+    "migrate:contact": "node src/scripts/migrate-contact.js",
+    "azure:upload-images": "node src/scripts/upload-images-to-azure.js",
+    "azure:update-db": "node src/scripts/update-db-image-urls.js"
   },
   "keywords": [
     "ecommerce",
